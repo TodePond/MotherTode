@@ -8,3 +8,5 @@ I'm currently in the process of making it as part of the Habitat library: https:
 When I've finished making it over there, I may or may not make a standalone version in this repository.
 
 For more info on the language, check out the documentation: https://l2wilson94.gitbook.io/mothertode
+
+The old proof-of-concept version of the language is here: https://github.com/l2wilson94/MotherTode-1
