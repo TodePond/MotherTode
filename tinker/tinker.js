@@ -129,7 +129,7 @@ const fullWorld = MotherTode(`
 	Hello :: "hello"
 	World :: "world"
 	Ending :: "!" | "."
-`).log()
+`)
 fullWorld.Hello("hello").log()
 fullWorld("hello world.").log().output
 
@@ -155,21 +155,7 @@ const whitespace = MotherTode(`
 	Hello :: "hello"
 	Name :: /[a-z]/+
 `).log()
-whitespace("hello bob").log().output.d
-/*
-const doubled = MotherTode(`
-	Greeting :: "hello"
-	Greeting :: "hi"
-`*/
-
-Term.select(
-	Term.list([
-		Term.string("greet"),
-		Term.string(" "),
-		Term.string("world"),
-	]),
-	[2],
-)("greet world").log().output.d
+whitespace("hello bob").log()
 
 const selector = MotherTode(`
 	:: Literal ([_] "add" [_]) Literal
