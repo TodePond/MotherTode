@@ -1,5 +1,7 @@
 <img align="right" height="100" src="http://todepond.com/IMG/MotherTode@0.25x.png">
+
 # MotherTode
+
 MotherTode is a language that lets you make languages. It's a language language.<br>
 For more info, check out the [documentation](https://l2wilson94.gitbook.io/mothertode/).
 
