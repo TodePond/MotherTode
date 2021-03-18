@@ -1,10 +1,27 @@
 <img align="right" height="100" src="http://todepond.com/IMG/MotherTode@0.25x.png">
-
 # MotherTode
-This repository is currently an empty placeholder for my rewrite of the MotherTode language.
+MotherTode is a language that lets you make languages. It's a language language.<br>
+For more info, check out the [documentation](https://l2wilson94.gitbook.io/mothertode/).
 
-I'm currently in the process of making it as part of the Habitat library: https://github.com/l2wilson94/Habitat
+# How does it work?
+Define your language by defining terms, like these:
 
-When I've finished making it over there, I may or may not make a standalone version in this repository.
+```
+Expression :: Number | String
+Greeting :: "greet" >> "Hello world!"
+```
 
-For more info on the language, check out the documentation: https://l2wilson94.gitbook.io/mothertode
+# What does it look like?
+This is a mini language that reads number and string literals (don't worry if you don't understand it yet):
+```
+:: Expression {"\n" Expression}
+Expression :: Number | String
+Number :: /[0-9]/+
+String (
+    :: '"' /[^"]/* '"'
+    >> ([left, inner, right]) => "`" + inner + "`"
+)
+```
+
+# Current Status
+I'm cleaning up stuff. Anything may be broken at any time.
