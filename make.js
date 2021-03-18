@@ -3,10 +3,10 @@
 //========//
 // Config //
 //========//
-const BUILD_NAME = "build"
+const BUILD_NAME = "mothertode"
 const EXAMPLE_CODE = `
 	
-	// Your demo code goes here
+	
 	
 `
 //======//
