@@ -1,4 +1,4 @@
-<img align="right" height="100" src="http://todepond.com/IMG/bluetode.png">
+<img align="right" height="100" src="http://todepond.com/IMG/MotherTode@0.25x.png">
 
 # MotherTode
 This repository is currently an empty placeholder for my rewrite of the MotherTode language.
