@@ -24,3 +24,17 @@ String (
     >> ([left, inner, right]) => "`" + inner + "`"
 )
 ```
+
+## How do I use it?
+You can embed it or import it.
+```
+<script src="mothertode-embed.js"></script>
+```
+```
+import MotherTode from "./mothertode-import.js"
+```
+Then use the `MotherTode` function.
+```
+const language = MotherTode(`:: /[a-zA-Z]/+ >> (name) => 'Hello #{name}!'`)
+language("world")
+```
