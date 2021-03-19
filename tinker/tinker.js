@@ -17,12 +17,14 @@ group("hiya").smartLog()
 group("hiyo").smartLog()
 group("heyya").smartLog()
 
-/*
+
 const groupyo = MotherTode(`"hi" ("yo")`)
-groupyo("hiyo").log()
+groupyo("hiyo").smartLog()
+groupyo("hiya").smartLog()
 
 const groupgroup = MotherTode(`("hi" ("yo" "yi") "ya") ("lol")`)
-groupgroup("hiyoyiyalol").log()
+groupgroup("hiyoyiyalol").smartLog()
+groupgroup("hiyoyiyolol").smartLog()
 
 const indent = MotherTode(`(
 	"hello" (
@@ -31,50 +33,62 @@ const indent = MotherTode(`(
 	)
 	"ha"
 )`)
-indent("hellotherelolha").log()
+indent("hellotherelolha").smartLog()
+indent("hellothereslolha").smartLog()
+
 
 const inner = MotherTode(`
 	"hi"
 	"yo" "ya"
 `)
-inner("hiyoya").log()
+inner("hiyoya").smartLog()
+inner("hiiyoya").smartLog()
 
 const hahaha = MotherTode(`"ha"+`)
-hahaha("ha").log()
-hahaha("haha").log()
-hahaha("hahaha").log()
+hahaha("ha").smartLog()
+hahaha("haha").smartLog()
+hahaha("hahaha").smartLog()
+hahaha("hsahah").smartLog()
 
 const hiya = MotherTode(`"hi" "ya"?`)
-hiya("hi").log()
-hiya("hiya").log()
+hiya("hi").smartLog()
+hiya("hiya").smartLog()
+hiya("hiysa").smartLog()
+hiya("hsiysa").smartLog()
 
 const hiyaya = MotherTode(`"hi" ["ya" "ya"]`)
-hiyaya("hi").log()
-hiyaya("hiyaya").log()
+hiyaya("hi").smartLog()
+hiyaya("hiyaya").smartLog()
+hiyaya("hiyayya").smartLog()
+hiyaya("hsiyayya").smartLog()
 
 const hiyayaya = MotherTode(`"hi" "ya"*`)
-hiyaya("hi").log()
-hiyaya("hiya").log()
-hiyaya("hiyaya").log()
+hiyaya("hi").smartLog()
+hiyaya("hiyaya").smartLog()
+hiyaya("hiybaya").smartLog()
+hiyaya("hsiybaya").smartLog()
 
 const hiyoyo = MotherTode(`"hi" {"yo"}`)
-hiyoyo("hi").log()
-hiyoyo("hiyo").log()
-hiyoyo("hiyoyo").log()
+hiyoyo("hi").smartLog()
+hiyoyo("hiyoyo").smartLog()
+hiyoyo("hriyoyo").smartLog()
 
 const hillo = MotherTode(`<"hi"	"hello">`)
-hillo("hi").log()
-hillo("hello").log()
+hillo("hi").smartLog()
+hillo("hello").smartLog()
+hillo("hey").smartLog()
 
 const hei = MotherTode(`"hi" | "hello" | "hey"`)
-hei("hi").log()
-hei("hello").log()
-hei("hey").log()
+hei("hi").smartLog()
+hei("hello").smartLog()
+hei("hey").smartLog()
+hei("ha").smartLog()
 
 const nohi = MotherTode(`<"hello" "hi"> ~ "hi" "yo"`)
-nohi("helloyo").log()
-nohi("hiyo").log() //TODO: should fail
-
+nohi("helloyo").smartLog()
+nohi("hiyo").smartLog() //TODO: should fail
+nohi("heyyo").smartLog()
+/*
 const match = MotherTode(`:: "hi" "ya" >> "Hello world!"`)
 match("hiyalol").log().output.d
 

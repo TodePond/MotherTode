@@ -12,7 +12,8 @@
 			throw e
 		}
 		
-		console.log("")
+		if (window.LOLOL === true) console.log("")
+		window.LOLOL = true
 		console.log(source)
 		//console.log(lint(translation))
 		

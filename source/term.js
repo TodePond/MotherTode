@@ -48,11 +48,35 @@
 			else {
 				for (const r of result) {
 					if (!r.success) {
-						console.log(`%c${r.error}`, STYLE_FAILURE)
+						smartLog(r)
 						break
 					}
 				}
 			}
+		})
+		
+		smartLogFuncs.set(Term.many, (result) => {
+			if (result.success) console.log(`%c${result.error}`, STYLE_SUCCESS)
+			else smartLog(result[0])
+		})
+		
+		smartLogFuncs.set(Term.or, (result) => {
+			if (result.success) {
+				console.log(`%c${result[0].error}`, STYLE_SUCCESS)
+			}
+			else {
+				console.group(`%c${result.error}`, STYLE_FAILURE)
+				for (const r of result) {
+					smartLog(r)
+				}
+				console.groupEnd()
+			}
+		})
+		
+		smartLogFuncs.set(Term.except, (result) => {
+			console.dir(result)
+			if (result.success) console.log(`%c${result.error}`, STYLE_SUCCESS)
+			else console.log(`%c${result.error}`, STYLE_FAILURE)
 		})
 	}
 	
@@ -62,7 +86,7 @@
 			console.dir(result)
 			throw new Error(`[MotherTode] Unimplemented smart error log for this type of term.`)
 		}
-		console.log(result.input)
+		//console.log(result.input)
 		func(result)
 		return result
 	}
@@ -234,7 +258,7 @@
 						tail: result.tail,
 						term: self,
 						error: `Found choice ${state.i + 1} of ${terms.length}: ` + result.error,
-						children: [...result, rejects]
+						children: [result, rejects]
 					})(input, args)
 				}
 				state.i++
@@ -242,10 +266,11 @@
 			
 			return Term.fail({
 				term: self,
-				error: `Expected one of ${terms.length} terms`,
+				error: `Expected one of ${terms.length} choices`,
 				children: results,
 			})(input, args)
 		}
+		self.type = Term.or
 		self.terms = terms
 		return self
 	}
@@ -290,7 +315,7 @@
 				return Term.fail({
 					term: self,
 					children: results,
-					error: `Expected multiple terms`,
+					error: `Expected repeated terms`,
 				})(input, args)
 			}
 			
@@ -300,10 +325,11 @@
 				tail: state.input,
 				term: self,
 				children: results,
-				error: `Found ${results.length-1} terms`,
+				error: `Found ${results.length-1} repeated terms`,
 			})(input, args)
 		}
 		self.term = term
+		self.type = Term.many
 		return self
 	}
 	
@@ -401,6 +427,7 @@
 			result.term = self
 			return result
 		}
+		self.type = Term.or
 		self.term = term
 		self.exceptions = exceptions
 		return self
