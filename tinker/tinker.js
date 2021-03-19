@@ -1,15 +1,23 @@
 const hello = MotherTode(`"hello"`)
-hello("hello").log()
+hello("hello").smartLog()
+hello("henllo").smartLog()
+
 
 const digit = MotherTode(`/[0-9]/`)
-digit("3").log()
+digit("3").smartLog()
+digit("a").smartLog()
 
-const yohoho = MotherTode(`"yo" "ho" "ho"`)
-yohoho("yohoho").log()
+const yohoho = MotherTode(`"yo" "ho" "hi"`)
+yohoho("yohohi").smartLog()
+yohoho("yohihi").smartLog()
+yohoho("yohoha").smartLog()
 
 const group = MotherTode(`("hi" "ya")`)
-group("hiya").log()
+group("hiya").smartLog()
+group("hiyo").smartLog()
+group("heyya").smartLog()
 
+/*
 const groupyo = MotherTode(`"hi" ("yo")`)
 groupyo("hiyo").log()
 
@@ -172,4 +180,4 @@ const exper = MotherTode(`
 
 const numm = MotherTode(`
 	Num >> "12"
-`)
+`)*/

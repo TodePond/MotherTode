@@ -12,7 +12,9 @@
 			throw e
 		}
 		
-		console.log(lint(translation))
+		console.log("")
+		console.log(source)
+		//console.log(lint(translation))
 		
 		term.success = result.success
 		term.output = result.output
@@ -25,6 +27,7 @@
 			result.log(...args)
 			return term
 		}
+		term.getUsefulError = result.getUsefulError
 		return term
 	}
 	

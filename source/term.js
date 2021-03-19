@@ -31,7 +31,43 @@
 		
 	}
 	
-	Term.result = ({success, source, output = source, tail, term, error = "", children = []} = {}) => {
+	const smartLogFuncs = new Map()
+	const prepSmartLogFuncs = () => {
+		smartLogFuncs.set(Term.string, (result) => {
+			if (result.success) console.log(`%c${result.error}`, STYLE_SUCCESS)
+			else console.log(`%c${result.error}`, STYLE_FAILURE)
+		})
+		
+		smartLogFuncs.set(Term.regExp, (result) => {
+			if (result.success) console.log(`%c${result.error}`, STYLE_SUCCESS)
+			else console.log(`%c${result.error}`, STYLE_FAILURE)
+		})
+		
+		smartLogFuncs.set(Term.list, (result) => {
+			if (result.success) console.log(`%c${result.error}`, STYLE_SUCCESS)
+			else {
+				for (const r of result) {
+					if (!r.success) {
+						console.log(`%c${r.error}`, STYLE_FAILURE)
+						break
+					}
+				}
+			}
+		})
+	}
+	
+	const smartLog = (result) => {
+		const func = smartLogFuncs.get(result.term.type)
+		if (func === undefined) {
+			console.dir(result)
+			throw new Error(`[MotherTode] Unimplemented smart error log for this type of term.`)
+		}
+		console.log(result.input)
+		func(result)
+		return result
+	}
+	
+	Term.result = ({type, success, source, output = source, tail, term, error = "", children = []} = {}) => {
 		const self = (input = "", args = {exceptions: []}) => {			
 			const result = [...children]
 			result.success = success
@@ -48,6 +84,7 @@
 				log(result, depth)
 				return result
 			}
+			result.smartLog = () => smartLog(result)
 			return result
 		}
 		return self
@@ -73,6 +110,7 @@
 			})(input, args)
 		}
 		term.string = string
+		term.type = Term.string
 		return term
 	}
 	
@@ -97,10 +135,11 @@
 			}
 			return Term.fail({
 				term,
-				error: `Expected /${term.regExp.source}/ but found: '${input}'`,
+				error: `Expected /${term.regExp.source}/ but found '${input.split("\n")[0]}'`,
 			})(input, args)
 		}
 		term.regExp = regExp
+		term.type = Term.regExp
 		return term
 	}
 	
@@ -156,6 +195,7 @@
 			
 		}
 		self.terms = terms
+		self.type = Term.list
 		return self
 	}
 	
@@ -551,5 +591,7 @@
 		self.ids = ids
 		return self
 	}
+	
+	prepSmartLogFuncs()
 	
 }
