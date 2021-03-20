@@ -1,6 +1,7 @@
 {
 	window.MotherTode = (source) => {
 		const result = MotherTode.parse(source)
+		if (!result.success) return result
 		const translation = result.output
 		let term
 		try {
@@ -12,9 +13,9 @@
 			throw e
 		}
 		
-		if (window.LOLOL === true) console.log("")
+		/*if (window.LOLOL === true) console.log("")
 		window.LOLOL = true
-		console.log(source)
+		console.log(source)*/
 		//console.log(lint(translation))
 		
 		term.success = result.success
@@ -28,7 +29,7 @@
 			result.log(...args)
 			return term
 		}
-		term.getUsefulError = result.getUsefulError
+		term.smartLog = result.smartLog
 		return term
 	}
 	
@@ -80,7 +81,7 @@
 
 	MotherTode.parse = (source) => {
 		const result = MotherTode.Term.term("MotherTode", MotherTode.scope)(source)
-		if (!result.success) result.log(8)
+		if (!result.success) result.smartLog()
 		return result
 	}
 }

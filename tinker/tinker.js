@@ -1,4 +1,4 @@
-const hello = MotherTode(`"hello"`)
+/*const hello = MotherTode(`"hello"`)
 hello("hello").smartLog()
 hello("henllo").smartLog()
 
@@ -83,9 +83,9 @@ hei("hello").smartLog()
 hei("hey").smartLog()
 hei("ha").smartLog()
 
-const nohi = MotherTode(`<"hello" "hi"> ~ "hi" "yo"`)
+const nohi = MotherTode(`<"hello" "hi" "hey"> ~ "hi" "yo"`)
 nohi("helloyo").smartLog()
-nohi("hiyo").smartLog() //TODO: should fail
+nohi("hiyo").smartLog()
 nohi("heyyo").smartLog()
 
 const match = MotherTode(`:: "hi" "ya" >> "Hello world!"`)
@@ -222,10 +222,11 @@ numm().smartLog()
 
 
 const ops = MotherTode(`
-	:: Number
-	Number :: Add | Literal
+	:: Number EOF
+	Number :: Add | Subtract | Literal
 	Literal :: /[0-9]/+
 	Add :: Number~Add "+" Number
+	Subtract :: Number~Subtract "-" Number
 `)
 
 //console.log(MotherTode.lint(ops.output))
@@ -234,3 +235,23 @@ ops("3").smartLog()
 ops("32").smartLog()
 ops("3+2").smartLog()
 ops("3+2+4").smartLog()
+ops("3-4").smartLog()
+ops("3+").smartLog()
+ops("3++5").smartLog()
+ops("3+2-4+4-3").smartLog()
+
+
+const heia = MotherTode(`(
+	:: (Message | Subject) EOF
+	Subject :: Letter+
+	Letter :: /[a-zA-Z]/
+	Message :: Greeting [_] Name
+	Name :: FirstName [_] Surname 
+	FirstName :: "Bob" | "Kevin"
+	Surname :: "Smith" | "Foo"
+	Greeting :: "Hi" | "Hello"
+)`)
+heia("HiBob Smith").smartLog()
+heia("World").smartLog()
+heia("Hey Bob Smith").smartLog()
+heia("Hi Stuart Foo").smartLog()*/
