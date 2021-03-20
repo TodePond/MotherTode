@@ -221,16 +221,16 @@ const numm = MotherTode(`
 numm().smartLog()
 
 
-/*const ops = MotherTode(`
+const ops = MotherTode(`
 	:: Number
 	Number :: Add | Literal
 	Literal :: /[0-9]/+
-	Add :: Number ~ Add "+" Number
+	Add :: Number~Add "+" Number
 `)
 
-console.log(MotherTode.lint(ops.output))
+//console.log(MotherTode.lint(ops.output))
 
 ops("3").smartLog()
 ops("32").smartLog()
 ops("3+2").smartLog()
-ops("3+2+4").smartLog()*/
+ops("3+2+4").smartLog()

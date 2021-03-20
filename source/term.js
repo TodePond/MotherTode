@@ -280,9 +280,10 @@
 				const term = terms[state.i]
 				const newArgs = {...args}
 				newArgs.exceptions = [...state.exceptions]
-				if (state.exceptions.includes(term)) {
+				if (state.exceptions.some(e => e.resolve?.() === term.resolve?.())) {
 					state.i++
-					state.exceptions = state.exceptions.filter(e => e !== term)
+					//console.log(state.exceptions)
+					state.exceptions = state.exceptions.filter(e => e.resolve?.() !== term.resolve?.())
 					continue
 				}
 				const result = term(input, newArgs)
@@ -530,9 +531,10 @@
 		return lines.join("|")
 	}
 	
-	const termCaches = new Map()
-	let termCount = 0
-	Term.terms = []
+	Term.export = (term, global, name) => {
+		global[name] = term
+		return term
+	}
 	
 	const resultCachess = []
 	Term.resetCache = () => {
@@ -559,10 +561,9 @@
 		return setValue(object[head], tail, value)
 	}
 	
-	Term.export = (term, global, name) => {
-		global[name] = term
-		return term
-	}
+	const termCaches = new Map()
+	let termCount = 0
+	Term.terms = []
 	
 	Term.term = (key, object) => {
 		
@@ -584,10 +585,8 @@
 		
 		const self = (input = "", args = {exceptions: []}) => {
 			
-			// Allow for scope override
-			if (object.isScope) {
-				object = object.term
-			}
+			const term = self.resolve()
+			
 			
 			const resultKey = getResultKey(key, input, args)
 			const resultCache = resultCaches.get(resultKey)
@@ -596,11 +595,6 @@
 				return resultCache
 			}
 			
-			const term = getValue(object, key)
-			
-			if (term === undefined) {
-				throw new Error(`[MotherTode] Unrecognised term: '${key}'`)
-			}
 			const result = term(input, args)
 			if (result.success) {
 				//result.error = `Found ${self.toLogString()}: ${result.error}`
@@ -616,18 +610,35 @@
 				output: result.output,
 				tail: result.tail,
 				term: result.term,
-				error: `CACHE`,
+				error: result.error,
 				children: [...result],
 			})(input, args)
 			
 			resultCaches.set(resultKey, cachedResult)
-			
 			return result
 		}
 		
+		self.resolve = () => {
+		
+			// Allow for scope override
+			if (object.isScope) {
+				object = object.term
+			}
+			
+			const term = getValue(object, key)
+			
+			if (term === undefined) {
+				throw new Error(`[MotherTode] Unrecognised term: '${key}'`)
+			}
+			return term
+		}
+		
 		self.toLogString = () => key.split(".").slice(-1)
+		
+		// DON'T do this yet. Do it the first time we access the term
 		self.id = id
 		Term.terms[id] = key
+		
 		termCache[key] = self
 		
 		return self
