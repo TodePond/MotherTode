@@ -66,11 +66,12 @@
 				console.log(`%c${result[0].error}`, STYLE_SUCCESS)
 			}
 			else {
-				console.group(`%c${result.error}`, STYLE_FAILURE)
+				console.log(`%c${result.error}`, STYLE_FAILURE)
+				/*console.group(`%c${result.error}`, STYLE_FAILURE)
 				for (const r of result) {
 					smartLog(r)
 				}
-				console.groupEnd()
+				console.groupEnd()*/
 			}
 		})
 		
@@ -152,16 +153,17 @@
 			const success = snippet === term.string
 			if (!success) return Term.fail({
 				term,
-				error: `Expected '${term.string}' but found '${snippet}'`,
+				error: `Expected ${term.toLogString()} but found "${snippet}"`,
 			})(input, args)
 			return Term.succeed({
 				source: term.string,
 				tail: input.slice(term.string.length),
 				term,
 				children: [],
-				error: `Found '${term.string}'`
+				error: `Found ${term.toLogString()}`
 			})(input, args)
 		}
+		term.toLogString = () => `"${term.string}"`
 		term.string = string
 		term.type = Term.string
 		return term
@@ -182,15 +184,16 @@
 					tail: input.slice(snippet.length),
 					term,
 					children: [],
-					error: `Found /${term.regExp.source}/ with '${snippet}'`,
+					error: `Found ${term.toLogString()} with "${snippet}"`,
 				})(input, args)
 				i++
 			}
 			return Term.fail({
 				term,
-				error: `Expected /${term.regExp.source}/ but found '${input.split("\n")[0]}'`,
+				error: `Expected ${term.toLogString()} but found "${input.split("\n")[0]}"`,
 			})(input, args)
 		}
+		term.toLogString = () => `${term.regExp}`
 		term.regExp = regExp
 		term.type = Term.regExp
 		return term
@@ -227,7 +230,7 @@
 			
 			const success = state.i >= self.terms.length
 			if (!success) {
-				const error = `Expected list of ${self.terms.length} terms`
+				let error = `Expected ${self.toLogString()}`
 				return Term.fail({
 					self,
 					children: results,
@@ -236,7 +239,7 @@
 				})(input, args)
 			}
 			
-			const error = `Found list of ${self.terms.length} terms`
+			let error = `Found ${self.toLogString()}`
 			return Term.succeed({
 				output: results.map(result => result.output).join(""),
 				source: results.map(result => result.source).join(""),
@@ -247,6 +250,8 @@
 			})(input, args)
 			
 		}
+		
+		self.toLogString = () => self.terms.map(t => t.toLogString?.()).join(" ")
 		self.terms = terms
 		self.type = Term.list
 		return self
@@ -295,9 +300,12 @@
 			
 			return Term.fail({
 				term: self,
-				error: `Expected one of ${terms.length} choices`,
+				error: `Expected ${self.toLogString()} but found "${input.split("\n")[0]}"`,
 				children: results,
 			})(input, args)
+		}
+		self.toLogString = () => {
+			return self.terms.map(t => t.toLogString?.()).join(" or ")
 		}
 		self.type = Term.or
 		self.terms = terms
@@ -344,7 +352,7 @@
 				return Term.fail({
 					term: self,
 					children: results,
-					error: `Expected repeated terms`,
+					error: `Expected ${self.toLogString?.()} but found ${input.split("\n")[0]}`,
 				})(input, args)
 			}
 			
@@ -354,9 +362,10 @@
 				tail: state.input,
 				term: self,
 				children: results,
-				error: `Found ${results.length-1} repeated terms`,
+				error: `Found ${self.term.toLogString?.()} repeated ${results.length-1} time${results.length-1 === 1? "" : "s"}`,
 			})(input, args)
 		}
+		self.toLogString = () => self.term.toLogString?.() + "+"
 		self.term = term
 		self.type = Term.many
 		return self
@@ -432,7 +441,7 @@
 			return Term.fail({
 				term: self,
 				children: [...result],
-				error: `Failed check`,
+				error: `Failed check with '${input.split("\n")[0]}'`,
 			})(input, args)
 		}
 		self.type = Term.check

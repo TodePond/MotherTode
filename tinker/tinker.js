@@ -73,7 +73,7 @@ hiyoyo("hi").smartLog()
 hiyoyo("hiyoyo").smartLog()
 hiyoyo("hriyoyo").smartLog()
 
-const hillo = MotherTode(`<"hi"	"hello">`)
+const hillo = MotherTode(`<"hi" "hello">`)
 hillo("hi").smartLog()
 hillo("hello").smartLog()
 hillo("hey").smartLog()
