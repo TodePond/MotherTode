@@ -96,11 +96,11 @@
 			if (error !== undefined) {
 				definition = `Term.error(${definition}, ${error})`
 			}
-			if (chain !== undefined) {
-				definition = `Term.chain(${chain}, ${definition})`
-			}
 			if (args !== undefined) {
 				definition = `Term.args(${definition}, ${args})`
+			}
+			if (chain !== undefined) {
+				definition = `Term.chain(${chain}, ${definition})`
 			}
 			if (emit !== undefined) {
 				definition = `Term.emit(${definition}, ${emit})`

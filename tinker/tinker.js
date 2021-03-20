@@ -88,43 +88,58 @@ const nohi = MotherTode(`<"hello" "hi"> ~ "hi" "yo"`)
 nohi("helloyo").smartLog()
 nohi("hiyo").smartLog() //TODO: should fail
 nohi("heyyo").smartLog()
-/*
+
 const match = MotherTode(`:: "hi" "ya" >> "Hello world!"`)
-match("hiyalol").log().output.d
+match("hiya").smartLog()
+match("hiyo").smartLog()
 
 const matchs = MotherTode(`:: "hi" "ya" >> () => {
 	const result = "Heya world!"
 	return result
 }`)
-matchs("hiyalol").log().output.d
+matchs("hiyalol").smartLog()
+matchs("hsyalol").smartLog()
 
 const long = MotherTode(`
 	:: "Hey"
 	:: "yo" "lol" (:: "bop")
 `)
-long("Heyyololbop").log()
+long("Heyyololbop").smartLog()
+long("Heyyolollbop").smartLog()
 
 const checker = MotherTode(`:: /[a-zA-Z]/+ ?? (name) => name.output == "Luke"`)
-//checker("Bob").log() //should fail
-checker("Luke").log()
+checker("123").smartLog()
+checker("Bob").smartLog() //should fail
+checker("Luke").smartLog()
 
-const errorer = MotherTode(`:: "foo" !! "BAR"`)
-errorer("foo").log()
-//errorer("fod").log() //should fail
+const errorer = MotherTode(`:: "FOO" !! "IT SHOULD BE FOO"`)
+errorer("FOO").smartLog()
+errorer("BAR").smartLog() //should fail
+
+const checkerError = MotherTode(`(
+	:: /[a-zA-Z]/+
+	?? (name) => name.output == "Luke"
+	!! (name) => "Bad name: '" + name.input.split('\\n')[0] + "'"
+)`)
+checkerError("123").smartLog()
+checkerError("Bob").smartLog() //should fail
+checkerError("Luke").smartLog()
 
 const argser = MotherTode(`:: "hi" @@ (args) => ({...args, foo: "bar"})`)
-argser("hi").log()
+argser("hi").smartLog()
+argser("hsi").smartLog()
 
-const chainer = MotherTode(`:: /[bcd]/ ++ /[abc]/`)
-chainer("b").log()
-//chainer("a").log() //should fail
-//chainer("d").log() //should fail
+const chainer = MotherTode(`:: /[12]/ ++ /[23]/`)
+chainer("1").smartLog()
+chainer("2").smartLog() //should fail
+chainer("3").smartLog() //should fail
+
 
 const filterer = MotherTode(`++ (:: "Bob" | "Luke") :: /[a-zA-Z]/+ >> (name) => "Hello " + name`)
-filterer("Bob").log().output.d
-filterer("Luke").log().output.d
-//filterer("Kevin").log() //should fail
-
+filterer("Bob").smartLog()
+filterer("Luke").smartLog()
+filterer("Kevin").smartLog() //should fail
+/*
 const vertdef = MotherTode(`
 	++ >> "World"
 	:: /[a-zA-Z]/+

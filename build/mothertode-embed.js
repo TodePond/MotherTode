@@ -181,11 +181,11 @@
 			if (error !== undefined) {
 				definition = `Term.error(${definition}, ${error})`
 			}
-			if (chain !== undefined) {
-				definition = `Term.chain(${chain}, ${definition})`
-			}
 			if (args !== undefined) {
 				definition = `Term.args(${definition}, ${args})`
+			}
+			if (chain !== undefined) {
+				definition = `Term.chain(${chain}, ${definition})`
 			}
 			if (emit !== undefined) {
 				definition = `Term.emit(${definition}, ${emit})`
@@ -820,6 +820,7 @@
 			else smartLog(result[0])
 		})
 		
+		// TODO: should this make a console group? after first pass of smartLog, check if this produces too much spam
 		smartLogFuncs.set(Term.or, (result) => {
 			if (result.success) {
 				console.log(`%c${result[0].error}`, STYLE_SUCCESS)
@@ -833,11 +834,39 @@
 			}
 		})
 		
-		smartLogFuncs.set(Term.except, (result) => {
-			console.dir(result)
+		smartLogFuncs.set(Term.except, smartLogFuncs.get(Term.or))
+		
+		smartLogFuncs.set(Term.emit, (result) => {
+			const emit = result.term
+			const match = emit.term
+			return smartLogFuncs.get(match.type)(result)
+		})
+		
+		// TODO: this is not very descriptive. maybe the '!!' operator should come into play here. Maybe it should really be used for smartLog, instead of (or in addition to) log
+		smartLogFuncs.set(Term.check, (result) => {
+			if (result.success) {
+				console.log(`%c${result.error}`, STYLE_SUCCESS)
+			}
+			else {
+				console.log(`%c${result.error}`, STYLE_FAILURE)
+			}
+		})
+		
+		smartLogFuncs.set(Term.error, (result) => {
 			if (result.success) console.log(`%c${result.error}`, STYLE_SUCCESS)
 			else console.log(`%c${result.error}`, STYLE_FAILURE)
 		})
+		
+		smartLogFuncs.set(Term.args, (result) => {
+			if (result.success) console.log(`%c${result.error}`, STYLE_SUCCESS)
+			else console.log(`%c${result.error}`, STYLE_FAILURE)
+		})
+		
+		smartLogFuncs.set(Term.chain, (result) => {
+			if (result.success) console.log(`%c${result.error}`, STYLE_SUCCESS)
+			else console.log(`%c${result.error}`, STYLE_FAILURE)
+		})
+		
 	}
 	
 	const smartLog = (result) => {
@@ -1100,6 +1129,7 @@
 			result.term = self
 			return result
 		}
+		self.type = Term.args
 		self.term = term
 		self.func = func
 		return self
@@ -1116,6 +1146,7 @@
 			if (result.success) result.output = self.func(result)
 			return result
 		}
+		self.type = Term.emit
 		self.term = term
 		self.func = func
 		return self
@@ -1125,16 +1156,18 @@
 		if (typeof func !== "function") {
 			const value = func
 			func = (result) => {
-				if (!result.success) return value
-				else return result.error
+				//if (!result.success) return value
+				//else return result.error
+				return value
 			}
 		}
 		const self = (input = "", args = {exceptions: []}) => {
 			const result = self.term(input, args)
-			result.error = self.func(result)
+			if (!result.success) result.error = self.func(result)
 			result.term = self
 			return result
 		}
+		self.type = Term.error
 		self.term = term
 		self.func = func
 		return self
@@ -1148,20 +1181,21 @@
 		const self = (input = "", args = {exceptions: []}) => {
 			const result = self.term(input, args)
 			if (!result.success) {
-				result.term = self
 				return result
 			}
 			const checkResult = self.func(result)
 			if (checkResult) {
-				result.error = `Passed check: ` + result.error
+				/*result.term = self
+				result.error = `Passed check`*/
 				return result
 			}
 			return Term.fail({
 				term: self,
 				children: [...result],
-				error: `Failed check: ` + result.error,
+				error: `Failed check`,
 			})(input, args)
 		}
+		self.type = Term.check
 		self.term = term
 		self.func = func
 		return self
@@ -1187,7 +1221,7 @@
 			result.term = self
 			return result
 		}
-		self.type = Term.or
+		self.type = Term.except
 		self.term = term
 		self.exceptions = exceptions
 		return self
@@ -1338,7 +1372,7 @@
 		const self = (input = "", args = {exceptions: []}) => {
 			const firstResult = self.first(input, args)
 			if (!firstResult.success) {
-				firstResult.error = `(Chained) ` + firstResult.error
+				firstResult.error = /*`(Chained) ` + */firstResult.error
 				return firstResult
 			}
 			
@@ -1347,6 +1381,7 @@
 			return secondResult
 			
 		}
+		self.type = Term.chain
 		self.first = first
 		self.second = second
 		return self
