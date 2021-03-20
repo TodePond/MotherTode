@@ -53,7 +53,6 @@ hahaha("hsahah").smartLog()
 const hiya = MotherTode(`"hi" "ya"?`)
 hiya("hi").smartLog()
 hiya("hiya").smartLog()
-hiya("hiysa").smartLog()
 hiya("hsiysa").smartLog()
 
 const hiyaya = MotherTode(`"hi" ["ya" "ya"]`)
@@ -139,39 +138,41 @@ const filterer = MotherTode(`++ (:: "Bob" | "Luke") :: /[a-zA-Z]/+ >> (name) => 
 filterer("Bob").smartLog()
 filterer("Luke").smartLog()
 filterer("Kevin").smartLog() //should fail
-/*
+
 const vertdef = MotherTode(`
 	++ >> "World"
 	:: /[a-zA-Z]/+
 	>> (name) => "Hello " + name
 `)
-vertdef().log().output.d
-
-//const decl = MotherTode(`Hello :: "hello"`
-//decl.Hello("hello").log()
+vertdef().smartLog()
 
 const decls = MotherTode(`
-	:: "hi"
+	:: Hi
+	Hi :: "hi"
 	Terms (
 		Hello :: "hello"
 		World :: "world"
 		Exclamation :: "!"
 	)
 `)
-decls.Terms.Hello("hello").log()
-decls("hi").log()
+decls.Terms.Hello("hello").smartLog()
+decls("hi").smartLog()
+decls("hey").smartLog()
 
 const fullWorld = MotherTode(`
-	:: Hello " " World Ending
+	:: Greeting
+	Greeting :: Hello " " World Ending
 	Hello :: "hello"
 	World :: "world"
 	Ending :: "!" | "."
 `)
-fullWorld.Hello("hello").log()
-fullWorld("hello world.").log().output
+fullWorld.Hello("hello").smartLog()
+fullWorld("hello world.").smartLog()
+fullWorld("hello wosrld.").smartLog()
+fullWorld.Greeting("hello wortld.").smartLog()
 
 const fullWorldScope = MotherTode(`
-	:: Greeting.Hello World
+	:: Greeting.Hello World Ending
 	Greeting (
 		:: Hello World Ending
 		World :: "pond"
@@ -180,10 +181,12 @@ const fullWorldScope = MotherTode(`
 	World :: "world"
 	Ending :: "." | "!"
 `)
-fullWorldScope.Greeting.Hello("hello").log()
-fullWorldScope("helloworld.").log()
-fullWorldScope.Greeting("hellopond!").log()
-fullWorldScope.Greeting.World("pond").log()
+fullWorldScope.Greeting.Hello("hello").smartLog()
+fullWorldScope("helloworld.").smartLog()
+fullWorldScope.Greeting("hellopond!").smartLog()
+fullWorldScope.Greeting.World("pond").smartLog()
+fullWorldScope("hellsoworld.").smartLog()
+fullWorldScope("helloworld .").smartLog()
 
 const whitespace = MotherTode(`
 	:: Hello " " Name
@@ -191,8 +194,10 @@ const whitespace = MotherTode(`
 	
 	Hello :: "hello"
 	Name :: /[a-z]/+
-`).log()
-whitespace("hello bob").log()
+`)
+whitespace("hello bob").smartLog()
+whitespace("hello 123").smartLog()
+whitespace("hi bob").smartLog()
 
 const selector = MotherTode(`
 	:: Literal ([_] "add" [_]) Literal
@@ -200,13 +205,32 @@ const selector = MotherTode(`
 	Literal :: /[0-9]/+
 `)
 
-selector("3 add 2").log().output.d
+selector("3 add 2").smartLog()
+selector("3 addd 2").smartLog()
+selector("3 ad 2").smartLog()
 
 const exper = MotherTode(`
-	Hello :: "hello"
-	export Hello
-`).log(7).output.d
+	:: "hello"
+	export as Hello
+`)
+exper("hello").smartLog()
 
 const numm = MotherTode(`
 	Num >> "12"
-`)*/
+`)
+numm().smartLog()
+
+
+/*const ops = MotherTode(`
+	:: Number
+	Number :: Add | Literal
+	Literal :: /[0-9]/+
+	Add :: Number ~ Add "+" Number
+`)
+
+console.log(MotherTode.lint(ops.output))
+
+ops("3").smartLog()
+ops("32").smartLog()
+ops("3+2").smartLog()
+ops("3+2+4").smartLog()*/

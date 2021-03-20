@@ -63,19 +63,21 @@
 		// TODO: should this make a console group? after first pass of smartLog, check if this produces too much spam
 		smartLogFuncs.set(Term.or, (result) => {
 			if (result.success) {
-				console.log(`%c${result[0].error}`, STYLE_SUCCESS)
+				console.log(`%c${result.error}`, STYLE_SUCCESS)
 			}
 			else {
 				console.log(`%c${result.error}`, STYLE_FAILURE)
-				/*console.group(`%c${result.error}`, STYLE_FAILURE)
-				for (const r of result) {
-					smartLog(r)
-				}
-				console.groupEnd()*/
 			}
 		})
 		
-		smartLogFuncs.set(Term.except, smartLogFuncs.get(Term.or))
+		smartLogFuncs.set(Term.except, (result) => {
+			if (result.success) {
+				console.log(`%c${result.error}`, STYLE_SUCCESS)
+			}
+			else {
+				console.log(`%c${result.error}`, STYLE_FAILURE)
+			}
+		})
 		
 		smartLogFuncs.set(Term.emit, (result) => {
 			const emit = result.term
@@ -153,7 +155,7 @@
 			const success = snippet === term.string
 			if (!success) return Term.fail({
 				term,
-				error: `Expected ${term.toLogString()} but found "${snippet}"`,
+				error: `Expected ${term.toLogString()} but found '${snippet}'`,
 			})(input, args)
 			return Term.succeed({
 				source: term.string,
@@ -184,13 +186,13 @@
 					tail: input.slice(snippet.length),
 					term,
 					children: [],
-					error: `Found ${term.toLogString()} with "${snippet}"`,
+					error: `Found ${term.toLogString()} with '${snippet}'`,
 				})(input, args)
 				i++
 			}
 			return Term.fail({
 				term,
-				error: `Expected ${term.toLogString()} but found "${input.split("\n")[0]}"`,
+				error: `Expected ${term.toLogString()} but found '${input.split("\n")[0]}'`,
 			})(input, args)
 		}
 		term.toLogString = () => `${term.regExp}`
@@ -230,7 +232,7 @@
 			
 			const success = state.i >= self.terms.length
 			if (!success) {
-				let error = `Expected ${self.toLogString()}`
+				let error = `Expected ${self.toLogString()} but found '${input.split("\n")[0]}'`
 				return Term.fail({
 					self,
 					children: results,
@@ -239,10 +241,11 @@
 				})(input, args)
 			}
 			
-			let error = `Found ${self.toLogString()}`
+			const source = results.map(result => result.source).join("")
+			let error = `Found ${self.toLogString()} with '${source}'`
 			return Term.succeed({
 				output: results.map(result => result.output).join(""),
-				source: results.map(result => result.source).join(""),
+				source,
 				tail: state.input,
 				term: self,
 				children: results,
@@ -251,10 +254,15 @@
 			
 		}
 		
-		self.toLogString = () => self.terms.map(t => t.toLogString?.()).join(" ")
+		self.toLogString = () => "(" + self.terms.map(t => t.toLogString?.()).join(" ") + ")"
 		self.terms = terms
 		self.type = Term.list
 		return self
+	}
+	
+	Term.logString = (term, func) => {
+		term.toLogString = func
+		return term
 	}
 	
 	Term.or = (terms) => {
@@ -283,7 +291,7 @@
 					const rejects = results.slice(0, -1)
 					for (const i in rejects) {
 						const reject = rejects[i]
-						reject.error = `Reject ${Number(i) + 1} of ${rejects.length}: ` + reject.error
+						reject.error = /*`Reject ${Number(i) + 1} of ${rejects.length}: ` +*/ reject.error
 					}
 					rejects.error = `Rejected ${rejects.length}`
 					return Term.succeed({
@@ -291,8 +299,8 @@
 						source: result.source,
 						tail: result.tail,
 						term: self,
-						error: `Found choice ${state.i + 1} of ${terms.length}: ` + result.error,
-						children: [result, rejects]
+						error: /*`Found choice ${state.i + 1} of ${terms.length}: ` + */result.error,
+						children: [...result, rejects]
 					})(input, args)
 				}
 				state.i++
@@ -300,12 +308,13 @@
 			
 			return Term.fail({
 				term: self,
-				error: `Expected ${self.toLogString()} but found "${input.split("\n")[0]}"`,
+				error: `Expected ${self.toLogString()} but found '${input.split("\n")[0]}'`,
 				children: results,
 			})(input, args)
 		}
 		self.toLogString = () => {
-			return self.terms.map(t => t.toLogString?.()).join(" or ")
+			return "(" + self.terms.map(t => t.toLogString?.()).join(" | ") + ")"
+			//return self.terms.map(t => t.toLogString?.()).join(" | ")
 		}
 		self.type = Term.or
 		self.terms = terms
@@ -324,6 +333,7 @@
 			result.term = self
 			return result
 		}
+		self.toLogString = () => `${self.term.toLogString?.()}?`
 		self.term = term
 		return self
 	}
@@ -355,14 +365,14 @@
 					error: `Expected ${self.toLogString?.()} but found ${input.split("\n")[0]}`,
 				})(input, args)
 			}
-			
+			const source = results.map(result => result.source).join("")
 			return Term.succeed({
 				output: results.map(result => result.output).join(""),
-				source: results.map(result => result.source).join(""),
+				source,
 				tail: state.input,
 				term: self,
 				children: results,
-				error: `Found ${self.term.toLogString?.()} repeated ${results.length-1} time${results.length-1 === 1? "" : "s"}`,
+				error: `Found ${self.term.toLogString?.()} ${results.length-1} time${results.length-1 === 1? "" : "s"} with '${source}'`,
 			})(input, args)
 		}
 		self.toLogString = () => self.term.toLogString?.() + "+"
@@ -462,6 +472,7 @@
 			error: `Expected end of file but got '${input}'`,
 		})(input, args)
 	}
+	Term.eof.toLogString = () => "EOF"
 	
 	Term.except = (term, exceptions) => {
 		const self = (input = "", args = {exceptions: []}) => {
@@ -469,6 +480,9 @@
 			const result = self.term(input, {...args, exceptions: [...exceptions, ...self.exceptions]})
 			result.term = self
 			return result
+		}
+		self.toLogString = () => {
+			return "(" + term.toLogString() + " ~ " + self.exceptions.map(t => t.toLogString?.()).join(", ") + ")"
 		}
 		self.type = Term.except
 		self.term = term
@@ -589,10 +603,11 @@
 			}
 			const result = term(input, args)
 			if (result.success) {
-				result.error = `Found ${key}: ` + result.error
+				//result.error = `Found ${self.toLogString()}: ${result.error}`
+				result.error = /*`Found ${self.toLogString()}: ` + */`${result.error}`
 			}
 			else {
-				result.error = `Expected ${key}: ` + result.error
+				result.error = /*`Expected ${self.toLogString()}:` + */ `${result.error}`
 			}
 			
 			const cachedResult = Term.result({
@@ -601,7 +616,7 @@
 				output: result.output,
 				tail: result.tail,
 				term: result.term,
-				error: `(Cached) ` + result.error,
+				error: `CACHE`,
 				children: [...result],
 			})(input, args)
 			
@@ -610,6 +625,7 @@
 			return result
 		}
 		
+		self.toLogString = () => key.split(".").slice(-1)
 		self.id = id
 		Term.terms[id] = key
 		termCache[key] = self

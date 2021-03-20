@@ -50,7 +50,7 @@
 		
 		scope.GapReference = Term.emit(
 			Term.string("_"),
-			"Term.many(Term.regExp(/ |	/))",
+			"Term.logString(Term.many(Term.regExp(/ |	/)), () => '_')",
 		)
 		
 		scope.EOFReference = Term.emit(
@@ -72,7 +72,7 @@
 			]),
 			(name) => {
 				const str = `Term.term('${name.args.scopePath}${name}', scope)`
-				console.log(str)
+				//console.log(str)
 				return str
 			}
 		)
@@ -198,9 +198,11 @@
 			Term.list([
 				Term.string("export"),
 				Term.maybe(Term.term("Gap", scope)),
+				Term.string("as"),
+				Term.maybe(Term.term("Gap", scope)),
 				Term.term("Reference", scope),
 			]),
-			([exp, gap, term]) => {
+			([exp, gap1, as, gap2, term]) => {
 				const name = term.output.split("'")[1]
 				return `{exp: ["${name}", "${term}"]},`
 			}

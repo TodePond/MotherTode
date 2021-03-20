@@ -60,6 +60,8 @@
 		return state.output
 	}
 	
+	MotherTode.lint = lint
+	
 	const checkString = (input, state, string) => {
 		const {position} = state
 		const end = position + string.length
