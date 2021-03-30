@@ -60,13 +60,16 @@
 			else smartLog(result[0])
 		})
 		
-		// TODO: should this make a console group? after first pass of smartLog, check if this produces too much spam
 		smartLogFuncs.set(Term.or, (result) => {
 			if (result.success) {
 				console.log(`%c${result.error}`, STYLE_SUCCESS)
 			}
 			else {
 				console.log(`%c${result.error}`, STYLE_FAILURE)
+				/*for (const r of result) {
+					//r.smartLog()
+				}
+				console.groupEnd()*/
 			}
 		})
 		
@@ -424,6 +427,7 @@
 			result.term = self
 			return result
 		}
+		self.toLogString = () => self.term.toLogString()
 		self.type = Term.args
 		self.term = term
 		self.func = func
@@ -441,6 +445,7 @@
 			if (result.success) result.output = self.func(result)
 			return result
 		}
+		self.toLogString = () => self.term.toLogString()
 		self.type = Term.emit
 		self.term = term
 		self.func = func

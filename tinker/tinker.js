@@ -1,4 +1,4 @@
-/*const hello = MotherTode(`"hello"`)
+const hello = MotherTode(`"hello"`)
 hello("hello").smartLog()
 hello("henllo").smartLog()
 
@@ -254,4 +254,4 @@ const heia = MotherTode(`(
 heia("HiBob Smith").smartLog()
 heia("World").smartLog()
 heia("Hey Bob Smith").smartLog()
-heia("Hi Stuart Foo").smartLog()*/
+heia("Hi Stuart Foo").smartLog()
