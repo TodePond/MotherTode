@@ -3,7 +3,7 @@
 //======//
 {
 	
-	const Term = {}
+	Term = {}
 	MotherTode.Term = Term
 	
 	const STYLE_SUCCESS = `font-weight: bold; color: rgb(0, 128, 255)`
@@ -45,14 +45,14 @@
 		
 		smartLogFuncs.set(Term.list, (result) => {
 			if (result.success) console.log(`%c${result.error}`, STYLE_SUCCESS)
-			else {
+			/*else {
 				for (const r of result) {
-					if (!r.success) {
+					if (!(r.success)) {
 						smartLog(r)
 						break
 					}
 				}
-			}
+			}*/
 		})
 		
 		smartLogFuncs.set(Term.many, (result) => {
@@ -252,16 +252,15 @@
 			
 			let logs = []
 			for (const r of results) {
-				if (r.term.type === Term.maybe) {
-					if (!r.trueSuccess) continue
-				}
+				if (r.trueSuccess === false) continue
+				
 				if (r.term.type === Term.or || r.term.type === Term.except) {
 					logs.push(r.winner?.toLogString?.())
 					continue
 				}
 				logs.push(r.term.toLogString?.())
 			}
-			const error = `Found (${logs.join(" ")}) with '${source}'`
+			const error = `Found: ${source}\nFor:   ${logs.join(" ")}`
 			
 			//let error = `Found ${self.toLogString()} with '${source}'`
 			return Term.succeed({
@@ -366,7 +365,8 @@
 			return result
 		}
 		self.type = Term.maybe
-		self.toLogString = () => {
+		self.toLogString = (result = {success: true}) => {
+			if (!result.success) return ""
 			const str = self.term.toLogString?.()
 			if (str[0] === "(" && str[str.length-1] === ")") {
 				return "[" + str.slice(1, -1) + "]"
@@ -523,8 +523,8 @@
 			result.term = self
 			return result
 		}
-		self.toLogString = () => {
-			return "(" + term.toLogString() + " ~ " + self.exceptions.map(t => t.toLogString?.()).join(", ") + ")"
+		self.toLogString = (result) => {
+			return "(" + term.toLogString(result) + " ~ " + self.exceptions.map(t => t.toLogString?.(result)).join(", ") + ")"
 		}
 		self.type = Term.except
 		self.term = term

@@ -2,7 +2,6 @@ const hello = MotherTode(`"hello"`)
 hello("hello").smartLog()
 hello("henllo").smartLog()
 
-
 const digit = MotherTode(`/[0-9]/`)
 digit("3").smartLog()
 digit("a").smartLog()
@@ -16,7 +15,6 @@ const group = MotherTode(`("hi" "ya")`)
 group("hiya").smartLog()
 group("hiyo").smartLog()
 group("heyya").smartLog()
-
 
 const groupyo = MotherTode(`"hi" ("yo")`)
 groupyo("hiyo").smartLog()
