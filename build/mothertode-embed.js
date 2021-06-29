@@ -1020,10 +1020,10 @@
 				if (r.trueSuccess === false) continue
 				
 				if (r.term.type === Term.or || r.term.type === Term.except) {
-					logs.push(r.winner?.toLogString?.())
+					//logs.push(r.winner?.toLogString?.())
 					continue
 				}
-				logs.push(r.term.toLogString?.())
+				//logs.push(r.term.toLogString?.())
 			}
 			const error = `Found: ${source}\nFor:   ${logs.join(" ")}`
 			
@@ -1041,7 +1041,7 @@
 		
 		self.toLogString = () => {
 			return "(" + self.terms.map(t => {
-				return t.toLogString?.()
+				//return t.toLogString?.()
 			}).join(" ") + ")"
 		}
 		self.terms = terms
@@ -1070,10 +1070,10 @@
 				const newArgs = {...args}
 				newArgs.exceptions = [...state.exceptions]
 				if (term.resolve !== undefined) {
-					if (state.exceptions.some(e => e.resolve?.() === term.resolve())) {
+					if (state.exceptions.some(e => e.resolve && e.resolve() === term.resolve())) {
 						state.i++
 						//console.log(state.exceptions)
-						state.exceptions = state.exceptions.filter(e => e.resolve?.() !== term.resolve?.())
+						state.exceptions = state.exceptions.filter(e => e.resolve && e.resolve() !== term.resolve())
 						continue
 					}
 				}
@@ -1107,7 +1107,7 @@
 			})(input, args)
 		}
 		self.toLogString = () => {
-			return "(" + self.terms.map(t => t.toLogString?.()).join(" | ") + ")"
+			//return "(" + self.terms.map(t => t.toLogString?.()).join(" | ") + ")"
 			//return self.terms.map(t => t.toLogString?.()).join(" | ")
 		}
 		self.type = Term.or
@@ -1131,12 +1131,12 @@
 		}
 		self.type = Term.maybe
 		self.toLogString = (result = {success: true}) => {
-			if (!result.success) return ""
+			/*if (!result.success) return ""
 			const str = self.term.toLogString?.()
 			if (str[0] === "(" && str[str.length-1] === ")") {
 				return "[" + str.slice(1, -1) + "]"
 			}
-			return `[${str}]`
+			return `[${str}]`*/
 		}
 		self.term = term
 		return self
@@ -1166,7 +1166,7 @@
 				return Term.fail({
 					term: self,
 					children: results,
-					error: `Expected ${self.toLogString?.()} but found ${input.split("\n")[0]}`,
+					//error: `Expected ${self.toLogString?.()} but found ${input.split("\n")[0]}`,
 				})(input, args)
 			}
 			const source = results.map(result => result.source).join("")
@@ -1176,10 +1176,10 @@
 				tail: state.input,
 				term: self,
 				children: results.slice(0, -1),
-				error: `Found ${self.term.toLogString?.()} ${results.length-1} time${results.length-1 === 1? "" : "s"} with '${source}'`,
+				//error: `Found ${self.term.toLogString?.()} ${results.length-1} time${results.length-1 === 1? "" : "s"} with '${source}'`,
 			})(input, args)
 		}
-		self.toLogString = () => self.term.toLogString?.() + "+"
+		//self.toLogString = () => self.term.toLogString?.() + "+"
 		self.term = term
 		self.type = Term.many
 		return self
@@ -1289,7 +1289,7 @@
 			return result
 		}
 		self.toLogString = (result) => {
-			return "(" + term.toLogString(result) + " ~ " + self.exceptions.map(t => t.toLogString?.(result)).join(", ") + ")"
+			//return "(" + term.toLogString(result) + " ~ " + self.exceptions.map(t => t.toLogString?.(result)).join(", ") + ")"
 		}
 		self.type = Term.except
 		self.term = term
