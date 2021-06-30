@@ -13,9 +13,9 @@
 			throw e
 		}
 		
-		if (window.LOLOL === true) console.log("")
-		window.LOLOL = true
-		console.log(source)
+		//if (window.LOLOL === true) console.log("")
+		//window.LOLOL = true
+		//console.log(source)
 		//console.log(lint(translation))
 		
 		term.success = result.success
