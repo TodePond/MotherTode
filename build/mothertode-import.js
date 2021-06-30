@@ -848,11 +848,11 @@
 		})
 		
 		smartLogFuncs.set(Term.emit, (result) => {
-			return smartLogFuncs.get(result.term.term.type)(Term.reterm(result, result.term.term))
+			//return smartLogFuncs.get(result.term.term.type)(Term.reterm(result, result.term.term))
 		})
 		
 		smartLogFuncs.set(Term.args, (result) => {
-			return smartLogFuncs.get(result.term.term.type)(Term.reterm(result, result.term.term))
+			//return smartLogFuncs.get(result.term.term.type)(Term.reterm(result, result.term.term))
 		})
 		
 		// TODO: this is not very descriptive. maybe the '!!' operator should come into play here. Maybe it should really be used for smartLog, instead of (or in addition to) log
@@ -1331,6 +1331,23 @@
 			if (typeof value === "boolean") {
 				lines.push(key + `:` + value)
 				continue
+			}
+
+			if (typeof value === "object" && value instanceof Array) {
+				
+				const keys = []
+				for (const v of value) {
+					const type = typeof v
+					if (type === "number") keys.push(value.toString())
+					else if (type === "string") keys.push('"' + value + '"')
+					else if (type === "boolean") keys.push(value.toString())
+					else break
+				}
+				if (keys.length === value.length) {
+					lines.push(keys.join(","))
+					console.log(lines)
+					continue
+				}
 			}
 			
 			throw new Error("[MotherTode] Unimplemented: I don't know how to cache these arguments correctly...")
