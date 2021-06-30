@@ -253,3 +253,13 @@ heia("HiBob Smith").smartLog()
 heia("World").smartLog()
 heia("Hey Bob Smith").smartLog()
 heia("Hi Stuart Foo").smartLog()
+
+
+
+const argser2 = MotherTode(`
+	:: Argser
+	Argser :: Hi @@ (args) => ({...args, foo: ["bar", "baz"]})
+	Hi :: "hi"
+`)
+argser2("hi").smartLog()
+argser2("hsi").smartLog()
