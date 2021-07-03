@@ -417,8 +417,8 @@
 					}
 					else if (c === "\\" && output[i+1] === "n") state.output += "\\\\\\\\"
 					else if (c === "\\") state.escape = true
-					else if (c === "'") state.output += "`"
-					else if (c === "#") state.output += "\\$"
+					//else if (c === "'") state.output += "`"
+					//else if (c === "#") state.output += "\\$"
 					else state.output += c
 				}
 				return state.output
