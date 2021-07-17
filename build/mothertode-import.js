@@ -123,9 +123,9 @@
 			Term.term("HorizontalDefinition", scope),
 			Term.term("HorizontalList", scope),
 			
-			Term.term("GapReference", scope),
 			Term.term("EOFReference", scope),
 			Term.term("Reference", scope),
+			Term.term("GapReference", scope),
 			
 			Term.term("Group", scope),
 			Term.term("MaybeGroup", scope),
@@ -1533,6 +1533,7 @@
 	prepSmartLogFuncs()
 	
 }
+
 
 MotherTode.install()
 

@@ -198,7 +198,7 @@ whitespace("hello 123").smartLog()
 whitespace("hi bob").smartLog()
 
 const selector = MotherTode(`
-	:: Literal ([_] "add" [_]) Literal
+	:: Literal ([" "] "add" [" "]) Literal
 	>> ([left, inner, right]) => '#{left} + #{right}'
 	Literal :: /[0-9]/+
 `)
@@ -243,8 +243,8 @@ const heia = MotherTode(`(
 	:: (Message | Subject) EOF
 	Subject :: Letter+
 	Letter :: /[a-zA-Z]/
-	Message :: Greeting [_] Name
-	Name :: FirstName [_] Surname 
+	Message :: Greeting [" "] Name
+	Name :: FirstName [" "] Surname 
 	FirstName :: "Bob" | "Kevin"
 	Surname :: "Smith" | "Foo"
 	Greeting :: "Hi" | "Hello"
