@@ -85,7 +85,6 @@
 
 	MotherTode.parse = (source) => {
 		const result = MotherTode.Term.term("MotherTode", MotherTode.scope)(source)
-		if (!result.success) result.smartLog()
 		return result
 	}
 }
@@ -97,22 +96,19 @@
 		const Term = MotherTode.Term
 	
 		scope.MotherTode = Term.args(
-			Term.error(
-				Term.emit(
-					Term.list([
-						Term.term("GroupInner", scope),
-						Term.eof,
-					]),
-					([{output}]) => {
-						const lines = []
-						lines.push(`const scope = {isScope: true}`)
-						lines.push(`const term = ${output}`)
-						lines.push(`scope.term = term`)
-						lines.push("return term")
-						return lines.join("\n")
-					},
-				),
-				({error}) => error,
+			Term.emit(
+				Term.list([
+					Term.term("GroupInner", scope),
+					Term.eof,
+				]),
+				([{output}]) => {
+					const lines = []
+					lines.push(`const scope = {isScope: true}`)
+					lines.push(`const term = ${output}`)
+					lines.push(`scope.term = term`)
+					lines.push("return term")
+					return lines.join("\n")
+				},
 			),
 			() => ({exceptions: [], indentSize: 0, scopePath: ""}),
 		)
@@ -778,124 +774,6 @@
 	const STYLE_SUCCESS = `font-weight: bold; color: rgb(0, 128, 255)`
 	const STYLE_FAILURE = `font-weight: bold; color: rgb(255, 70, 70)`
 	const STYLE_DEPTH = `font-weight: bold;`
-	const log = (result, depth = 5) => {
-		
-		if (depth < 0) {
-			console.log("%cMaximum depth reached", STYLE_DEPTH)
-			return
-		}
-	
-		const style = result.success? STYLE_SUCCESS : STYLE_FAILURE
-		
-		if (result.length === 0) {
-			console.log("%c" + result.error, style)
-			return
-		}
-		
-		console.groupCollapsed("%c" + result.error, style)
-		for (const child of result) {
-			log(child, depth - 1)
-		}
-		console.groupEnd()
-		
-	}
-	
-	const smartLogFuncs = new Map()
-	const prepSmartLogFuncs = () => {
-		smartLogFuncs.set(Term.string, (result) => {
-			if (result.success) console.log(`%c${result.error}`, STYLE_SUCCESS)
-			else console.log(`%c${result.error}`, STYLE_FAILURE)
-		})
-		
-		smartLogFuncs.set(Term.regExp, (result) => {
-			if (result.success) console.log(`%c${result.error}`, STYLE_SUCCESS)
-			else console.log(`%c${result.error}`, STYLE_FAILURE)
-		})
-		
-		smartLogFuncs.set(Term.list, (result) => {
-			if (result.success) console.log(`%c${result.error}`, STYLE_SUCCESS)
-			/*else {
-				for (const r of result) {
-					if (!(r.success)) {
-						smartLog(r)
-						break
-					}
-				}
-			}*/
-		})
-		
-		smartLogFuncs.set(Term.many, (result) => {
-			if (result.success) console.log(`%c${result.error}`, STYLE_SUCCESS)
-			else smartLog(result[0])
-		})
-		
-		smartLogFuncs.set(Term.or, (result) => {
-			if (result.success) {
-				console.log(`%c${result.error}`, STYLE_SUCCESS)
-			}
-			else {
-				console.log(`%c${result.error}`, STYLE_FAILURE)
-				/*for (const r of result) {
-					//r.smartLog()
-				}
-				console.groupEnd()*/
-			}
-		})
-		
-		smartLogFuncs.set(Term.except, (result) => {
-			if (result.success) {
-				console.log(`%c${result.error}`, STYLE_SUCCESS)
-			}
-			else {
-				console.log(`%c${result.error}`, STYLE_FAILURE)
-			}
-		})
-		
-		smartLogFuncs.set(Term.emit, (result) => {
-			//return smartLogFuncs.get(result.term.term.type)(Term.reterm(result, result.term.term))
-		})
-		
-		smartLogFuncs.set(Term.args, (result) => {
-			//return smartLogFuncs.get(result.term.term.type)(Term.reterm(result, result.term.term))
-		})
-		
-		// TODO: this is not very descriptive. maybe the '!!' operator should come into play here. Maybe it should really be used for smartLog, instead of (or in addition to) log
-		smartLogFuncs.set(Term.check, (result) => {
-			if (result.success) {
-				console.log(`%c${result.error}`, STYLE_SUCCESS)
-			}
-			else {
-				console.log(`%c${result.error}`, STYLE_FAILURE)
-			}
-		})
-		
-		smartLogFuncs.set(Term.error, (result) => {
-			//console.log(result)
-			return smartLogFuncs.get(result.term.term.type)(Term.reterm(result, result.term.term))
-		})
-		
-		smartLogFuncs.set(Term.chain, (result) => {
-			if (result.success) console.log(`%c${result.error}`, STYLE_SUCCESS)
-			else console.log(`%c${result.error}`, STYLE_FAILURE)
-		})
-		
-		smartLogFuncs.set(Term.eof, (result) => {
-			if (result.success) console.log(`%c${result.error}`, STYLE_SUCCESS)
-			else console.log(`%c${result.error}`, STYLE_FAILURE)
-		})
-		
-	}
-	
-	const smartLog = (result) => {
-		const func = smartLogFuncs.get(result.term.type)
-		if (func === undefined) {
-			console.dir(result)
-			throw new Error(`[MotherTode] Unimplemented smart error log for this type of term.`)
-		}
-		//console.log(result.input)
-		func(result)
-		return result
-	}
 	
 	Term.result = ({type, success, source, output = source, tail, term, error = "", children = []} = {}) => {
 		const self = (input = "", args = {exceptions: []}) => {			
@@ -910,11 +788,6 @@
 			result.input = input
 			result.args = cloneArgs(args)
 			result.toString = function() { return this.output }
-			result.log = (depth) => {
-				log(result, depth)
-				return result
-			}
-			result.smartLog = () => smartLog(result)
 			return result
 		}
 		return self
@@ -929,18 +802,15 @@
 			const success = snippet === term.string
 			if (!success) return Term.fail({
 				term,
-				error: `Expected ${term.toLogString()} but found '${snippet}'`,
 			})(input, args)
 			return Term.succeed({
 				source: term.string,
 				tail: input.slice(term.string.length),
 				term,
 				children: [],
-				error: `Found ${term.toLogString()}`
 			})(input, args)
 		}
 		term.resolve = () => term.string
-		term.toLogString = () => `"${term.string}"`
 		term.string = string
 		term.type = Term.string
 		return term
@@ -961,17 +831,14 @@
 					tail: input.slice(snippet.length),
 					term,
 					children: [],
-					error: `Found ${term.toLogString()} with '${snippet}'`,
 				})(input, args)
 				i++
 			}
 			return Term.fail({
 				term,
-				error: `Expected ${term.toLogString()} but found '${input.split("\n")[0]}'`,
 			})(input, args)
 		}
 		term.resolve = () => term.regExp.source
-		term.toLogString = () => `${term.regExp}`
 		term.regExp = regExp
 		term.type = Term.regExp
 		return term
@@ -1008,28 +875,14 @@
 			
 			const success = state.i >= self.terms.length
 			if (!success) {
-				let error = `Expected ${self.toLogString()} but found '${input.split("\n")[0]}'`
 				return Term.fail({
 					self,
 					children: results,
-					error,
 					term: self,
 				})(input, args)
 			}
 			
 			const source = results.map(result => result.source).join("")
-			
-			let logs = []
-			for (const r of results) {
-				if (r.trueSuccess === false) continue
-				
-				if (r.term.type === Term.or || r.term.type === Term.except) {
-					//logs.push(r.winner?.toLogString?.())
-					continue
-				}
-				//logs.push(r.term.toLogString?.())
-			}
-			const error = `Found: ${source}\nFor:   ${logs.join(" ")}`
 			
 			//let error = `Found ${self.toLogString()} with '${source}'`
 			return Term.succeed({
@@ -1038,24 +891,13 @@
 				tail: state.input,
 				term: self,
 				children: results,
-				error,
 			})(input, args)
 			
 		}
-		
-		self.toLogString = () => {
-			return "(" + self.terms.map(t => {
-				//return t.toLogString?.()
-			}).join(" ") + ")"
-		}
+
 		self.terms = terms
 		self.type = Term.list
 		return self
-	}
-	
-	Term.logString = (term, func) => {
-		term.toLogString = func
-		return term
 	}
 	
 	Term.or = (terms) => {
@@ -1084,18 +926,11 @@
 				const result = term(input, newArgs)
 				results.push(result)
 				if (result.success) {
-					/*const rejects = results.slice(0, -1)
-					for (const i in rejects) {
-						const reject = rejects[i]
-						//reject.error = /*`Reject ${Number(i) + 1} of ${rejects.length}: ` + reject.error
-					}*/
-					//rejects.error = `Rejected ${rejects.length}`
 					const finalResult = Term.succeed({
 						output: result.output,
 						source: result.source,
 						tail: result.tail,
 						term: self,
-						error: /*`Found choice ${state.i + 1} of ${terms.length}: ` + */result.error,
 						children: [...result/*, rejects*/]
 					})(input, args)
 					finalResult.winner = term
@@ -1106,14 +941,10 @@
 			
 			return Term.fail({
 				term: self,
-				error: `Expected ${self.toLogString()} but found '${input.split("\n")[0]}'`,
 				children: results,
 			})(input, args)
 		}
-		self.toLogString = () => {
-			//return "(" + self.terms.map(t => t.toLogString?.()).join(" | ") + ")"
-			//return self.terms.map(t => t.toLogString?.()).join(" | ")
-		}
+		
 		self.type = Term.or
 		self.terms = terms
 		return self
@@ -1134,14 +965,6 @@
 			return result
 		}
 		self.type = Term.maybe
-		self.toLogString = (result = {success: true}) => {
-			/*if (!result.success) return ""
-			const str = self.term.toLogString?.()
-			if (str[0] === "(" && str[str.length-1] === ")") {
-				return "[" + str.slice(1, -1) + "]"
-			}
-			return `[${str}]`*/
-		}
 		self.term = term
 		return self
 	}
@@ -1170,7 +993,6 @@
 				return Term.fail({
 					term: self,
 					children: results,
-					//error: `Expected ${self.toLogString?.()} but found ${input.split("\n")[0]}`,
 				})(input, args)
 			}
 			const source = results.map(result => result.source).join("")
@@ -1180,10 +1002,8 @@
 				tail: state.input,
 				term: self,
 				children: results.slice(0, -1),
-				//error: `Found ${self.term.toLogString?.()} ${results.length-1} time${results.length-1 === 1? "" : "s"} with '${source}'`,
 			})(input, args)
 		}
-		//self.toLogString = () => self.term.toLogString?.() + "+"
 		self.term = term
 		self.type = Term.many
 		return self
@@ -1196,7 +1016,6 @@
 			result.term = self
 			return result
 		}
-		self.toLogString = () => self.term.toLogString()
 		self.type = Term.args
 		self.term = term
 		self.func = func
@@ -1214,29 +1033,7 @@
 			if (result.success) result.output = self.func(result)
 			return result
 		}
-		self.toLogString = () => self.term.toLogString()
 		self.type = Term.emit
-		self.term = term
-		self.func = func
-		return self
-	}
-	
-	Term.error = (term, func) => {
-		if (typeof func !== "function") {
-			const value = func
-			func = (result) => {
-				//if (!result.success) return value
-				//else return result.error
-				return value
-			}
-		}
-		const self = (input = "", args = {exceptions: []}) => {
-			const result = self.term(input, args)
-			if (!result.success) result.error = self.func(result)
-			result.term = self
-			return result
-		}
-		self.type = Term.error
 		self.term = term
 		self.func = func
 		return self
@@ -1254,14 +1051,11 @@
 			}
 			const checkResult = self.func(result)
 			if (checkResult) {
-				/*result.term = self
-				result.error = `Passed check`*/
 				return result
 			}
 			return Term.fail({
 				term: self,
 				children: [...result],
-				error: `Failed check with '${input.split("\n")[0]}'`,
 			})(input, args)
 		}
 		self.type = Term.check
@@ -1282,7 +1076,6 @@
 			error: `Expected end of file but got '${input}'`,
 		})(input, args)
 	}
-	Term.eof.toLogString = () => "EOF"
 	Term.eof.type = Term.eof
 	
 	Term.except = (term, exceptions) => {
@@ -1291,9 +1084,6 @@
 			const result = self.term(input, {...args, exceptions: [...exceptions, ...self.exceptions]})
 			result.term = self
 			return result
-		}
-		self.toLogString = (result) => {
-			//return "(" + term.toLogString(result) + " ~ " + self.exceptions.map(t => t.toLogString?.(result)).join(", ") + ")"
 		}
 		self.type = Term.except
 		self.term = term
@@ -1416,7 +1206,6 @@
 			
 			const term = self.resolve()
 			
-			
 			const resultKey = getResultKey(key, input, args)
 			const resultCache = resultCaches.get(resultKey)
 			if (resultCache !== undefined) {
@@ -1439,7 +1228,6 @@
 				output: result.output,
 				tail: result.tail,
 				term: result.term,
-				error: result.error,
 				children: [...result],
 			})(input, args)
 			
@@ -1461,8 +1249,6 @@
 			}
 			return term
 		}
-		
-		self.toLogString = () => key.split(".").slice(-1)
 		
 		// DON'T do this yet. Do it the first time we access the term
 		self.id = id
@@ -1529,12 +1315,9 @@
 			source: result.source,
 			tail: result.tail,
 			term,
-			error: result.error,
 			children,
 		})(result.input, result.args)
 	}
-	
-	prepSmartLogFuncs()
 	
 }
 

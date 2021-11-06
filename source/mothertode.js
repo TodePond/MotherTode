@@ -5,22 +5,19 @@
 		const Term = MotherTode.Term
 	
 		scope.MotherTode = Term.args(
-			Term.error(
-				Term.emit(
-					Term.list([
-						Term.term("GroupInner", scope),
-						Term.eof,
-					]),
-					([{output}]) => {
-						const lines = []
-						lines.push(`const scope = {isScope: true}`)
-						lines.push(`const term = ${output}`)
-						lines.push(`scope.term = term`)
-						lines.push("return term")
-						return lines.join("\n")
-					},
-				),
-				({error}) => error,
+			Term.emit(
+				Term.list([
+					Term.term("GroupInner", scope),
+					Term.eof,
+				]),
+				([{output}]) => {
+					const lines = []
+					lines.push(`const scope = {isScope: true}`)
+					lines.push(`const term = ${output}`)
+					lines.push(`scope.term = term`)
+					lines.push("return term")
+					return lines.join("\n")
+				},
 			),
 			() => ({exceptions: [], indentSize: 0, scopePath: ""}),
 		)

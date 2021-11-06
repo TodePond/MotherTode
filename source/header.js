@@ -85,7 +85,6 @@
 
 	MotherTode.parse = (source) => {
 		const result = MotherTode.Term.term("MotherTode", MotherTode.scope)(source)
-		if (!result.success) result.smartLog()
 		return result
 	}
 }
