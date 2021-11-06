@@ -1,4 +1,4 @@
-const hello = MotherTode(`"hello"`)
+/*const hello = MotherTode(`"hello"`)
 hello("hello").smartLog()
 hello("henllo").smartLog()
 
@@ -263,3 +263,36 @@ const argser2 = MotherTode(`
 `)
 argser2("hi").smartLog()
 argser2("hsi").smartLog()
+*//*
+const language = MotherTode(`:: /[a-zA-Z]/+ >> (name) => "Hello " + name + "!"`)
+const result = language("world")
+console.log(result.output)*/
+
+const language = MotherTode(`
+
+	:: FizzBuzz | Fizz | Buzz | Number
+	Number :: /[0-9]/+ >> (n) => parseInt(n)
+	FizzBuzz (
+		:: Number
+		?? (n) => n % 5 == 0 && n % 3 == 0
+		>> "FizzBuzz"
+	)
+
+	Fizz (
+		:: Number
+s		?? (n) => n % 3 == 0
+		>> "Fizz"
+	)
+
+	Buzz (
+		:: Number
+		?? (n) => n % 5 == 0
+		>> "Buzz"
+	)
+
+`)
+
+for (let i = 0; i < 20; i++) {
+	const result = language(i.toString())
+	console.log(result.output)
+}

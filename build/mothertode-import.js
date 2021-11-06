@@ -1,7 +1,10 @@
 {
 	window.MotherTode = (source) => {
 		const result = MotherTode.parse(source)
-		if (!result.success) return result
+		if (!result.success) {
+			throw new Error(`[MotherTode] MotherTode failed to parse :(\n\nThis is a placeholder error message until I fix proper error messages again.\n`)
+			return result
+		}
 		const translation = result.output
 		let term
 		try {
@@ -30,6 +33,7 @@
 			return term
 		}
 		term.smartLog = result.smartLog
+
 		return term
 	}
 	
