@@ -35,6 +35,7 @@ import MotherTode from "./mothertode-import.js"
 ```
 Then use the `MotherTode` function.
 ```js
-const language = MotherTode(`:: /[a-zA-Z]/+ >> (name) => 'Hello #{name}!'`)
-language("world")
+const language = MotherTode(`:: /[a-zA-Z]/+ >> (name) => "Hello " + name + "!"`)
+const result = language("world")
+console.log(result.output)
 ```
