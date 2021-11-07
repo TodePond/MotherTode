@@ -14,14 +14,14 @@ Greeting :: "greet" >> "Hello world!"
 ```
 
 ## What does it look like?
-This is a mini language that reads number and string literals (don't worry if you don't understand it yet):
+This is a mini language that lets you add numbers (don't worry if you don't understand it yet):
 ```
-:: Expression {"\n" Expression}
-Expression :: Number | String
-Number :: /[0-9]/+
-String (
-    :: '"' /[^"]/* '"'
-    >> ([left, inner, right]) => "`" + inner + "`"
+:: Number {"\n" Number}
+Number :: Add | Literal
+Literal :: /[0-9]/+
+Add (
+    :: Number~Add "+" Number
+    >> ([left, operator, right]) => parseInt(left) + parseInt(right)
 )
 ```
 
