@@ -16,24 +16,25 @@ Greeting :: "greet" >> "Hello world!"
 ## What does it look like?
 This is a mini language that lets you add numbers (don't worry if you don't understand it yet):
 ```
-:: Number {"\n" Number}
-Number :: Add | Literal
-Literal :: /[0-9]/+
+:: Addition {"\n" Addition}
+Addition :: Add | Literal
+Literal :: /[0-9]/+ ["." /[0-9]/+]
 Add (
-    :: Number~Add "+" Number
+    :: Addition~Add "+" Addition
     >> ([left, operator, right]) => parseInt(left) + parseInt(right)
 )
 ```
+This example takes an input of multiple numbers seperated by `+` symbols, and return what they add up to.
 
 ## How do I use it?
-You can embed it or import it.
+You can embed it or import it, using the files located in `/build/`.
 ```js
 <script src="mothertode-embed.js"></script>
 ```
 ```js
 import MotherTode from "./mothertode-import.js"
 ```
-Then use the `MotherTode` function.
+Then use the `MotherTode` function like so.
 ```js
 const language = MotherTode(`:: /[a-zA-Z]/+ >> (name) => "Hello " + name + "!"`)
 const result = language("world")
