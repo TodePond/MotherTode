@@ -21,7 +21,7 @@ Addition :: Add | Literal
 Literal :: /[0-9]/+ ["." /[0-9]/+]
 Add (
     :: Addition~Add "+" Addition
-    >> ([left, operator, right]) => parseInt(left) + parseInt(right)
+    >> ([left, operator, right]) => parseFloat(left) + parseFloat(right)
 )
 ```
 This example takes an input of multiple numbers seperated by `+` symbols, and return what they add up to.
