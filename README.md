@@ -1,3 +1,5 @@
+# As of 17th August 2022... I'm currently redesigning and rewriting MotherTode. For the old version, go to the [legacy](https://github.com/TodePond/MotherTodeLegacy) repo.
+
 <img align="right" height="100" src="http://todepond.com/IMG/MotherTode@0.25x.png">
 
 # MotherTode
