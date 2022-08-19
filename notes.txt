@@ -1,4 +1,50 @@
+
 emit "Hello world!"
 
 ============================
 
+match "world"
+emit (name) => `Hello ${name}!`
+throw true
+
+============================
+
+match Name
+emit (name) => `Hello ${name}!`
+throw true
+
+term Name {
+	match Letter+
+}
+
+term Letter {
+	match /[a-zA-Z]/
+}
+
+============================
+
+term Name {
+	match Letter+
+}
+
+----------------------------
+
+term Name {
+	Letter+
+}
+
+----------------------------
+
+term Name = Letter+
+
+============================
+
+term Number = /[1-9]/ /[0-9]/+
+term String = '"' /[^"]/* '"'
+term Value = Number | String
+term Gap = (" " | "	")
+
+term Print {
+	match "print" [Gap] @Value
+	emit (value) => `console.log(${value})`
+}
