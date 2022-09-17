@@ -5,46 +5,92 @@ emit "Hello world!"
 
 match "world"
 emit (name) => `Hello ${name}!`
-throw true
+throw error
 
 ============================
 
 match Name
 emit (name) => `Hello ${name}!`
-throw true
+throw error
 
-term Name {
+let Name = {
 	match Letter+
 }
 
-term Letter {
+let Letter = {
 	match /[a-zA-Z]/
 }
 
 ============================
 
-term Name {
+let Name = {
 	match Letter+
 }
 
 ----------------------------
 
-term Name {
-	Letter+
-}
-
-----------------------------
-
-term Name = Letter+
+let Name = Letter+
 
 ============================
 
-term Number = /[1-9]/ /[0-9]/+
-term String = '"' /[^"]/* '"'
-term Value = Number | String
-term Gap = (" " | "	")
+let Number = /[1-9]/ /[0-9]/+
+let String = '"' /[^"]/* '"'
+let Value = Number | String
+let Gap = (" " | "	")+
 
-term Print {
+let Print = {
 	match "print" [Gap] @Value
 	emit (value) => `console.log(${value})`
 }
+
+============================
+
+match FizzBuzz | Fizz | Buzz | Number
+
+let Number = /[0-9]/+
+let FizzBuzz = {
+	match Fizz & Buzz
+	emit "FizzBuzz"
+}
+
+let Fizz = {
+	match Number
+	check (n) => parseInt(n) % 3 === 0
+	emit "Fizz"
+}
+
+term Buzz = {
+	match Number
+	check (n) => parseInt(n) % 5 === 0
+	emit "Buzz"
+}
+
+============================
+
+let either = (a, b) => a | b
+
+match either("foo", "bar)
+
+============================
+
+let Line = (indent) => indent Expression
+let Expression = Number | String
+
+match Line("	")
+
+============================
+
+// Assign 'default' to set the defaults for terms 
+default = {
+	match anything
+	check true
+	emit ""
+	throw undefined
+	skip nothing
+}
+
+============================
+
+match "print" @Name
+skip (" " | "	")+
+emit (name) => `Hello ${name}!`
