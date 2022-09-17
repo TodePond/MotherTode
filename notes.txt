@@ -81,7 +81,7 @@ match Line("	")
 ============================
 
 // Assign 'default' to set the defaults for terms 
-default = {
+let default = {
 	match anything
 	check true
 	emit ""
