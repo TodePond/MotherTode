@@ -1,4 +1,4 @@
-# Terms
+# Custom Terms
 
 You can make your own **custom term** by using brace brackets.
 
@@ -21,7 +21,7 @@ match {
 You can define your term as a **constant**, like usual.
 
 ```
-let Greeting {
+let Greeting = {
     match "greeting"
     emit "Hello world!"
 }

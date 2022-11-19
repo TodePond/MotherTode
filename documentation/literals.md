@@ -1,7 +1,6 @@
 # Literals
 
-Some things are **terms**.\
-For example, these **literals** are **terms**!
+Some terms are **literals**.
 
 ## Strings
 
