@@ -22,10 +22,8 @@
 
 ## Properties
 
--   [Match](match.md)
 -   [Skip](skip.md)
 -   [Then](then.md)
--   [Emit](emit.md)
 -   [Check](check.md)
 -   [Throw](throw.md)
 -   [Print](print.md)
