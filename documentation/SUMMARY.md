@@ -17,21 +17,23 @@
 ## Making Terms
 
 -   [Properties](properties.md)
+-   [Functions](functions.md)
 -   [Scope](scope.md)
+
+## Properties
+
+-   [Match](match.md)
 -   [Skip](skip.md)
 -   [Then](then.md)
+-   [Emit](emit.md)
 -   [Check](check.md)
 -   [Throw](throw.md)
 -   [Print](print.md)
 
-## Functions
+## Library
 
--   [Functions](functions.md)
+-   [Library](library.md)
 
 ## Examples
 
 -   [Examples](examples.md)
-
-## Library
-
--   [Library](library.md)
