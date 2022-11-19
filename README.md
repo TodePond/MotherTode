@@ -1,44 +1,64 @@
-# As of 17th August 2022... I'm currently redesigning and rewriting MotherTode. For the old version, go to the [legacy](https://github.com/TodePond/MotherTodeLegacy) repo.
+# As of 17th August 2022... I'm currently redesigning and rewriting MotherTode. Everything is broken and work-in-progress. For the old version, go to the [legacy](https://github.com/TodePond/MotherTodeLegacy) repo.
 
 <img align="right" height="100" src="http://todepond.com/IMG/MotherTode@0.25x.png">
 
 # MotherTode
 
-MotherTode is a language that lets you make languages. It's a language language.<br>
+MotherTode is a language that helps me to make languages. It's a language language.<br>
 For more info, check out the [documentation](https://l2wilson94.gitbook.io/mothertode/).
 
 ## How does it work?
+
 Define your language by defining terms, like these:
 
 ```
-Expression :: Number | String
-Greeting :: "greet" >> "Hello world!"
+let Expression = Number | String
+```
+
+```
+let Greeting = {
+    match "greeting"
+    emit "Hello world!"
+}
 ```
 
 ## What does it look like?
+
 This is a mini language that lets you add numbers (don't worry if you don't understand it yet):
+
 ```
-:: Addition {"\n" Addition}
-Addition :: Add | Literal
-Literal :: /[0-9]/+ ["." /[0-9]/+]
-Add (
-    :: Addition~Add "+" Addition
-    >> ([left, operator, right]) => parseFloat(left) + parseFloat(right)
+match Number
+
+let Number = Add | Literal
+let Literal = /[0-9]/+
+let Add = {
+    match @(Number & !Add) "+" @Number
+    emit (left, right) => left + right
 )
 ```
-This example takes an input of multiple numbers seperated by `+` symbols, and return what they add up to.
 
 ## How do I use it?
-You can embed it or import it, using the files located in `/build/`.
-```js
+
+You can embed it, like this:
+
+```html
 <script src="mothertode-embed.js"></script>
+<script>
+    const language = MotherTode("emit (name) => `Hello ${name}!`")
+    console.log(language("world")) //Hello world!
+<script>
 ```
-```js
-import MotherTode from "./mothertode-import.js"
+
+Or import it, like this:
+
+```javascript
+import { MotherTode } from "./mothertode-import.js"
+const language = MotherTode("emit (name) => `Hello ${name}!`")
+console.log(language("world")) //Hello world!
 ```
-Then use the `MotherTode` function like so.
-```js
-const language = MotherTode(`:: /[a-zA-Z]/+ >> (name) => "Hello " + name + "!"`)
-const result = language("world")
-console.log(result.output)
+
+Or use it from the command line, like this:
+
+```bash
+mothertode ./hello.mt "world"
 ```
