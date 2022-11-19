@@ -7,7 +7,7 @@ You can make a **function** by writing some parameters before a custom term.
 ```
 
 You can call the function by passing arguments to it.\
-An argument can be a **term**.
+Arguments can be used as a **term**.
 
 ```
 match Line<"    ">
@@ -15,7 +15,7 @@ match Line<"    ">
 let Line = <indent> => indent "ribbit"
 ```
 
-An argument can be a **javascript value**.
+Arguments can be as a **javascript value**.
 
 ```
 match MultipleOf<3>
