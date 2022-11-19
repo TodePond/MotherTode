@@ -24,19 +24,19 @@ let Digit = /[0-9]/
 ## Sum
 
 ```
+let Number = /[0-9]/+
+
 match @Number {"," @Number}
 skip {" "}
 emit (...numbers) => numbers.reduce((a, b) => a + b, 0)
+```
 
+```
 let Number = /[0-9]/+
-```
 
-```
 match @Number ["," @self]
 skip {" "}
 emit (head, tail = 0) => head + tail
-
-let Number = /[0-9]/+
 ```
 
 ## Fizzbuzz
@@ -46,18 +46,18 @@ match FizzBuzz | Fizz | Buzz | Number
 
 let Number = /[0-9]/+
 let FizzBuzz = Fizz & Buzz
-let MultipleOf = (n) => {
+let MultipleOf = <n> => {
     match Number
     check (v) => v % n === 0
 }
 
 let Fizz = {
-    match MultipleOf(3)
+    match MultipleOf<3>
     emit "Fizz"
 }
 
 let Buzz = {
-    match MultipleOf(5)
+    match MultipleOf<5>
     emit "Buzz"
 }
 ```
@@ -66,10 +66,10 @@ let Buzz = {
 match FizzBuzz | Fizz | Buzz | Number
 
 let FizzBuzz = Fizz & Buzz
-let Fizz = MultipleOf(3) & emit "Fizz"
-let Buzz = MultipleOf(5) & emit "Buzz"
+let Fizz = MultipleOf<3> & emit "Fizz"
+let Buzz = MultipleOf<5> & emit "Buzz"
 let Number = /[0-9]/+
-let MultipleOf = (n) => Number & check (v) => v % n === 0
+let MultipleOf = <n> => Number & check (v) => v % n === 0
 ```
 
 ## Calculator
@@ -96,10 +96,10 @@ match Number
 
 let Number = Add | Subtract | Literal
 let Literal = /[0-9]/+
-let Add = Operation("+", (a, b) => a + b)
-let Subtract = Operation("-", (a, b) => a - b)
+let Add = Operation<"+", (a, b) => a + b>
+let Subtract = Operation<"-", (a, b) => a - b>
 
-let Operation = (operator, emitter) => {
+let Operation = <operator, emitter> => {
     match @(Number & !self) operator @Number
     emit (a, b) => emitter(a, b)
 }
