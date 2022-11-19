@@ -17,24 +17,24 @@ This language converts an input to upper case and then shouts hello to it.
 
 ```
 match Input
-then UpperCase
+then ToUpperCase
 
 let Input = {
     match /[a-zA-Z]/+
     emit (name) => name.toUpperCase()
 }
 
-let UpperCase = {
+let ToUpperCase = {
     match /[A-Z/+
     emit (name) => `HELLO ${name}!`
 }
 ```
 
-You can also curry an emit function to access the output of each step.
+You can also curry an emit function to use the output of each step.
 
 ```
 match /[a-zA-Z]/+
-then UpperCase
+then ToUpperCase
 
 emit (name) => (greeting) => `I say '${greeting}' to ${name}!`
 
@@ -43,7 +43,7 @@ let Input = {
     emit (name) => name.toUpperCase()
 }
 
-let UpperCase = {
+let ToUpperCase = {
     match /[A-Z]/+
     emit (name) => `HELLO ${name}!`
 }

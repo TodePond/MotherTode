@@ -15,7 +15,7 @@ match Line<"    ">
 let Line = <indent> => indent "ribbit"
 ```
 
-Arguments can be as a **javascript value**.
+Arguments can be used as a **javascript value**.
 
 ```
 match MultipleOf<3>

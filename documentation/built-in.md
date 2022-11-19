@@ -6,7 +6,7 @@ There are some **special terms** that you can use.
 
 The `global` keyword refers to the global term (the **language**).
 
-This matches a number.
+This matches a number with one-or-more digits.
 
 ```
 match /[0-9]/ [global]
@@ -26,16 +26,6 @@ let Number = /[0-9]/ [self]
 let Number = /[0-9]/ [Number]
 ```
 
-## End
-
-The `end` keyword matches the end of the file/source.
-
-This matches anything until the end of the file.
-
-```
-match { !end }
-```
-
 ## Start
 
 The `start` keyword matches the start of the file/source.
@@ -44,6 +34,16 @@ This only matches "hello" when it is the first term in the file/source.
 
 ```
 match start "hello"
+```
+
+## End
+
+The `end` keyword matches the end of the file/source.
+
+This matches anything until the end of the file.
+
+```
+match { !end }
 ```
 
 ## Anything
@@ -56,7 +56,7 @@ match anything
 
 ## Nothing
 
-The `nothing` keyword matches nothing. It's useful for emitting something without
+The `nothing` keyword matches nothing. It's useful for emitting something without matching anything.
 
 ```
 match nothing
