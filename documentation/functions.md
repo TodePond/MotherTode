@@ -10,7 +10,7 @@ You can call the function by passing arguments to it.\
 An argument can be a **term**.
 
 ```
-match Line("    ")
+match Line<"    ">
 
 let Line = <indent> => indent "ribbit"
 ```

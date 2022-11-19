@@ -7,30 +7,31 @@
 -   [Emit](emit.md)
 -   [Match](match.md)
 
-## Built-In Terms
+## Using Terms
 
 -   [Literals](literals.md)
--   [Operators](operators.md)
 -   [Constants](constants.md)
--   [Global](global.md)
--   [Self](self.md)
+-   [Operators](operators.md)
+-   [Built-In Terms](built-in.md)
 
-## Custom Terms
+## Making Terms
 
--   [Custom Terms](terms.md)
--   [Select](select.md)
--   [Check](check.md)
+-   [Properties](properties.md)
+-   [Scope](scope.md)
 -   [Skip](skip.md)
 -   [Then](then.md)
+-   [Check](check.md)
 -   [Throw](throw.md)
 -   [Print](print.md)
 
 ## Functions
 
 -   [Functions](functions.md)
--   [Scope](scope.md)
+
+## Examples
+
 -   [Examples](examples.md)
 
 ## Library
 
--   [Term](term.md)
+-   [Library](library.md)

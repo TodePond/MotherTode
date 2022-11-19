@@ -63,3 +63,14 @@ This matches any word except for "ribbit".
 ```
 match /[a-zA-Z]/+ & !"ribbit"
 ```
+
+## Select
+
+You can **select** which terms to pass into the emit function with the `@` symbol.
+
+```
+match "greet " @/a-zA-Z/+
+emit (name) => `Hello ${name}!`
+
+let Name = /[a-zA-Z]/+
+```
