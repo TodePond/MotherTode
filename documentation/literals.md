@@ -1,6 +1,6 @@
 # Literals
 
-Some terms are **literals**.
+Terms can be **literals**.
 
 ## Strings
 
