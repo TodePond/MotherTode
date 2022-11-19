@@ -2,12 +2,12 @@
 
 -   [Intro](README.md)
 
-# Basics
+## Basics
 
 -   [Emit](emit.md)
 -   [Match](match.md)
 
-# Built-In Terms
+## Built-In Terms
 
 -   [Literals](literals.md)
 -   [Operators](operators.md)
@@ -15,7 +15,7 @@
 -   [Global](global.md)
 -   [Self](self.md)
 
-# Custom Terms
+## Custom Terms
 
 -   [Custom Terms](terms.md)
 -   [Select](select.md)
@@ -25,12 +25,12 @@
 -   [Throw](throw.md)
 -   [Print](print.md)
 
-# Functions
+## Functions
 
 -   [Functions](functions.md)
 -   [Scope](scope.md)
 -   [Examples](examples.md)
 
-# Library
+## Library
 
 -   [Term](term.md)

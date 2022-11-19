@@ -7,9 +7,9 @@ You can embed it, like this:
 ```html
 <script src="mothertode-embed.js"></script>
 <script>
-    const language = MotherTode("emit (name) => `Hello ${name}!`")
-    console.log(language("world")) //Hello world!
-<script>
+	const language = MotherTode("emit (name) => `Hello ${name}!`")
+	console.log(language("world")) //Hello world!
+</script>
 ```
 
 Or import it, like this:
