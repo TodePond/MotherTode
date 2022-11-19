@@ -1,5 +1,3 @@
-<img align="right" height="100" src="http://todepond.com/IMG/MotherTode@0.25x.png">
-
 # Intro
 
 [MotherTode](https://github.com/TodePond/MotherTode) is a language that helps me to make languages. It's a language language.

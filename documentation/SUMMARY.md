@@ -1,5 +1,3 @@
-# Table of contents
-
 -   [Intro](README.md)
 -   [Emit](emit.md)
 -   [Literals](literals.md)
