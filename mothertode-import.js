@@ -7,13 +7,7 @@ const MotherTodeFrogasaurus = {}
 // SOURCE //
 //========//
 {
-	//====== ./term.js ======
-	{
-		MotherTodeFrogasaurus["./term.js"] = {}
-		
 
-
-	}
 
 
 
@@ -22,7 +16,7 @@ const MotherTodeFrogasaurus = {}
 //=========//
 // EXPORTS //
 //=========//
-export const {  } = MotherTodeFrogasaurus["./term.js"]
+
 
 export const MotherTode = {
 }

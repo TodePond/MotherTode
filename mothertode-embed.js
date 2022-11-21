@@ -7,13 +7,7 @@ const MotherTodeFrogasaurus = {}
 // SOURCE //
 //========//
 {
-	//====== ./term.js ======
-	{
-		MotherTodeFrogasaurus["./term.js"] = {}
-		
 
-
-	}
 
 
 
