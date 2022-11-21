@@ -26,3 +26,22 @@ Term.string = (string: string) => {
 
 	return term
 }
+
+Term.regExp = (regExp: RegExp) => {
+	const term = (source: string) => {
+		const match = regExp.exec(source)
+		if (!match) {
+			throw Error(term.error(source))
+		}
+		return match[0]
+	}
+
+	term.error = (source: string) => {
+		const snippet = source.slice(0, 10)
+		return `Expected '${regExp}' but found '${snippet}'`
+	}
+
+	term.type = Term.regExp
+
+	return term
+}
