@@ -36,8 +36,10 @@ Term.regExp = (regExp: RegExp) => {
 		return match[0]
 	}
 
+	const SNIPPET_LENGTH = 15
 	term.error = (source: string) => {
-		const snippet = source.slice(0, 10)
+		const snippetLength = Math.min(SNIPPET_LENGTH, source.length)
+		const snippet = source.slice(0, snippetLength)
 		return `Expected '${regExp}' but found '${snippet}'`
 	}
 
