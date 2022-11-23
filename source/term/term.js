@@ -29,7 +29,7 @@ export const Term = class {
 
 	// Find a match for the term in the source
 	match(source) {
-		return source
+		return [source]
 	}
 
 	// Which matches to select (and pass through to check and emit)
@@ -66,11 +66,7 @@ Term.string = class extends Term {
 		return source.startsWith(this.string) ? [this.string] : []
 	}
 
-	emit() {
-		return this.string
-	}
-
-	error(source) {
+	throw(source) {
 		return `Expected '${this.string}' but found '${source.slice(0, this.string.length)}'`
 	}
 }
@@ -84,6 +80,12 @@ Term.regExp = class extends Term {
 	match(source) {
 		const matches = source.match(this.regExp)
 		return matches ? [...matches] : []
+	}
+
+	throw(source) {
+		const SNIPPET_LENGTH = 15
+		const snippet = source.slice(0, SNIPPET_LENGTH)
+		return `Expected '${this.regExp}' but found '${snippet}'`
 	}
 }
 
@@ -102,15 +104,11 @@ Term.any = class extends Term {
 	}
 
 	match(source) {
-		return source.length > 0
+		return source.length > 0 ? [source[0]] : []
 	}
 
-	emit(source) {
-		return source[0]
-	}
-
-	error(source) {
-		return "Expected any character but found none"
+	throw(source) {
+		return "Expected any character but found nothing"
 	}
 }
 
@@ -120,11 +118,11 @@ Term.end = class extends Term {
 	}
 
 	match(source) {
-		return source.length === 0
+		return source.length === 0 ? [""] : []
 	}
 
-	error(source) {
-		return "Expected end of source but found more"
+	throw(source) {
+		return "Expected end of source but found something"
 	}
 }
 
@@ -133,8 +131,8 @@ Term.nothing = class extends Term {
 		super("nothing")
 	}
 
-	emit(source) {
-		return ""
+	match(source) {
+		return [""]
 	}
 }
 

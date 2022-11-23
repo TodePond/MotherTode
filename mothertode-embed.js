@@ -41,7 +41,7 @@ const MotherTodeFrogasaurus = {}
 		
 			// Find a match for the term in the source
 			match(source) {
-				return source
+				return [source]
 			}
 		
 			// Which matches to select (and pass through to check and emit)
@@ -78,11 +78,7 @@ const MotherTodeFrogasaurus = {}
 				return source.startsWith(this.string) ? [this.string] : []
 			}
 		
-			emit() {
-				return this.string
-			}
-		
-			error(source) {
+			throw(source) {
 				return `Expected '${this.string}' but found '${source.slice(0, this.string.length)}'`
 			}
 		}
@@ -96,6 +92,12 @@ const MotherTodeFrogasaurus = {}
 			match(source) {
 				const matches = source.match(this.regExp)
 				return matches ? [...matches] : []
+			}
+		
+			throw(source) {
+				const SNIPPET_LENGTH = 15
+				const snippet = source.slice(0, SNIPPET_LENGTH)
+				return `Expected '${this.regExp}' but found '${snippet}'`
 			}
 		}
 		
@@ -114,15 +116,11 @@ const MotherTodeFrogasaurus = {}
 			}
 		
 			match(source) {
-				return source.length > 0
+				return source.length > 0 ? [source[0]] : []
 			}
 		
-			emit(source) {
-				return source[0]
-			}
-		
-			error(source) {
-				return "Expected any character but found none"
+			throw(source) {
+				return "Expected any character but found nothing"
 			}
 		}
 		
@@ -132,11 +130,11 @@ const MotherTodeFrogasaurus = {}
 			}
 		
 			match(source) {
-				return source.length === 0
+				return source.length === 0 ? [""] : []
 			}
 		
-			error(source) {
-				return "Expected end of source but found more"
+			throw(source) {
+				return "Expected end of source but found something"
 			}
 		}
 		
@@ -145,8 +143,8 @@ const MotherTodeFrogasaurus = {}
 				super("nothing")
 			}
 		
-			emit(source) {
-				return ""
+			match(source) {
+				return [""]
 			}
 		}
 		
