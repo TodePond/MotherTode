@@ -3,36 +3,53 @@ export const Term = class {
 		this.type = type
 	}
 
+	// If the term matches the source, translate it
 	translate(source) {
-		if (this.match(source)) {
-			if (this.check(source)) {
-				return this.emit(source)
+		const matches = this.match(source)
+
+		if (matches.length > 0) {
+			const selected = this.select(matches)
+			if (this.check(...selected)) {
+				return this.emit(...selected)
 			}
 		}
 
 		if (this.throw(source)) {
-			throw Error(this.error(source))
+			const error = this.throw(source)
+			if (error !== undefined) {
+				throw Error(error)
+			}
 		}
 	}
 
+	// Does the source satisfy the term?
+	test(source) {
+		return this.match(source).length > 0 && this.check(source)
+	}
+
+	// Find a match for the term in the source
 	match(source) {
-		return true
+		return source
 	}
 
-	check(source) {
-		return true
+	// Which matches to select (and pass through to check and emit)
+	select(matches) {
+		return matches
 	}
 
-	error(source) {
+	// Error message to throw if the term does not match the source
+	throw(source) {
 		return "Error matching term"
 	}
 
-	throw(source) {
+	// Additional checks to perform after matching
+	check(...selected) {
 		return true
 	}
 
-	emit(source) {
-		return source
+	// What to emit if the term matches the source
+	emit(...selected) {
+		return selected.join("")
 	}
 }
 
@@ -46,10 +63,10 @@ Term.string = class extends Term {
 	}
 
 	match(source) {
-		return source.startsWith(this.string)
+		return source.startsWith(this.string) ? [this.string] : []
 	}
 
-	emit(source) {
+	emit() {
 		return this.string
 	}
 
@@ -65,17 +82,8 @@ Term.regExp = class extends Term {
 	}
 
 	match(source) {
-		return this.regExp.test(source)
-	}
-
-	emit(source) {
-		return source.match(this.regExp)[0]
-	}
-
-	error(source) {
-		const SNIPPET_LENGTH = 15
-		const snippet = source.slice(0, SNIPPET_LENGTH)
-		return `Expected '${this.regExp}' but found '${snippet}'`
+		const matches = source.match(this.regExp)
+		return matches ? [...matches] : []
 	}
 }
 
@@ -133,3 +141,19 @@ Term.nothing = class extends Term {
 //===========//
 // OPERATORS //
 //===========//
+Term.list = class extends Term {
+	constructor(terms) {
+		super("list")
+		this.terms = terms
+	}
+
+	match(source) {
+		for (const term of this.terms) {
+			if (!term.match(source)) {
+				return false
+			}
+			source = source.slice(term.emit(source).length)
+		}
+		return true
+	}
+}
