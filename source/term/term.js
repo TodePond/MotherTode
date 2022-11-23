@@ -51,6 +51,11 @@ export const Term = class {
 	emit(...selected) {
 		return selected.join("")
 	}
+
+	// After translating, what to do with the result
+	then() {
+		return
+	}
 }
 
 //==========//
@@ -139,19 +144,14 @@ Term.nothing = class extends Term {
 //===========//
 // OPERATORS //
 //===========//
-Term.list = class extends Term {
-	constructor(terms) {
-		super("list")
-		this.terms = terms
+Term.maybe = class extends Term {
+	constructor(term) {
+		super("maybe")
+		this.term = term
 	}
 
 	match(source) {
-		for (const term of this.terms) {
-			if (!term.match(source)) {
-				return false
-			}
-			source = source.slice(term.emit(source).length)
-		}
-		return true
+		const matches = this.term.match(source)
+		return matches.length > 0 ? matches : [""]
 	}
 }

@@ -96,3 +96,16 @@ Deno.test("nothing", () => {
 	assertEquals(nothingTerm.test("hello"), true)
 	assertEquals(nothingTerm.test(""), true)
 })
+
+Deno.test("maybe", () => {
+	const maybeTerm = new Term.maybe(new Term.string("hello"))
+
+	assertEquals(maybeTerm.translate("hello"), "hello")
+	assertEquals(maybeTerm.translate("bye"), "")
+
+	assertEquals(maybeTerm.match("hello"), ["hello"])
+	assertEquals(maybeTerm.match("bye"), [""])
+
+	assertEquals(maybeTerm.test("hello"), true)
+	assertEquals(maybeTerm.test("bye"), true)
+})
