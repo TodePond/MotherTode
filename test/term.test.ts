@@ -11,4 +11,4 @@ Deno.test("regExp term", () => {
 	const helloTerm = Term.regExp(/Hello/)
 	const snippet = helloTerm("Hello world!")
 	assertEquals(snippet, "Hello")
-}
+})
