@@ -109,3 +109,19 @@ Deno.test("maybe", () => {
 	assertEquals(maybeTerm.test("hello"), true)
 	assertEquals(maybeTerm.test("bye"), true)
 })
+
+Deno.test("many", () => {
+	const manyTerm = new Term.many(new Term.string("hello"))
+
+	assertEquals(manyTerm.translate("hello"), "hello")
+	assertEquals(manyTerm.translate("hellohello"), "hellohello")
+	assertThrows(() => manyTerm.translate(""))
+
+	assertEquals(manyTerm.match("hello"), ["hello"])
+	assertEquals(manyTerm.match("hellohello"), ["hello", "hello"])
+	assertEquals(manyTerm.match(""), [])
+
+	assertEquals(manyTerm.test("hello"), true)
+	assertEquals(manyTerm.test("hellohello"), true)
+	assertEquals(manyTerm.test(""), false)
+})

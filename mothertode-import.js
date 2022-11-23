@@ -168,6 +168,29 @@ const MotherTodeFrogasaurus = {}
 			}
 		}
 		
+		Term.many = class extends Term {
+			constructor(term) {
+				super("many")
+				this.term = term
+			}
+		
+			match(source) {
+				const matches = []
+		
+				while (true) {
+					const termMatches = this.term.match(source)
+					if (termMatches.length === 0) {
+						break
+					}
+		
+					matches.push(...termMatches)
+					source = source.slice(termMatches.join("").length)
+				}
+		
+				return matches
+			}
+		}
+		
 
 		MotherTodeFrogasaurus["./term/term.js"].Term = Term
 	}
