@@ -56,8 +56,8 @@ Deno.test("rest", () => {
 	assertEquals(restTerm.test("bye"), true)
 })
 
-Deno.test("any", () => {
-	const anyTerm = new Term.any()
+Deno.test("anything", () => {
+	const anyTerm = new Term.anything()
 
 	assertEquals(anyTerm.translate("hello"), "h")
 	assertEquals(anyTerm.translate("bye"), "b")
@@ -139,4 +139,10 @@ Deno.test("list", () => {
 
 	assertEquals(listTerm.test("hellobye"), true)
 	assertEquals(listTerm.test("helloby"), false)
+})
+
+Deno.test("list - skip", () => {
+	const listTerm = new Term.list([new Term.string("hello"), new Term.string("bye")], new Term.string(" "))
+
+	assertEquals(listTerm.translate("hello bye"), "hellobye")
 })

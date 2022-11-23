@@ -32,19 +32,9 @@ export const Term = class {
 		return [source]
 	}
 
-	// Which matches to select (and pass through to check and emit)
-	select(matches) {
-		return matches
-	}
-
-	// Error message to throw if the term does not match the source
-	throw(source) {
-		return "Error matching term"
-	}
-
-	// Additional checks to perform after matching
-	check(...selected) {
-		return true
+	// After translating, what to do with the result
+	then() {
+		return
 	}
 
 	// What to emit if the term matches the source
@@ -52,9 +42,23 @@ export const Term = class {
 		return selected.join("")
 	}
 
-	// After translating, what to do with the result
-	then() {
+	// Additional checks to perform after matching
+	check(...selected) {
+		return true
+	}
+
+	// Error message to throw if the term does not match the source
+	throw(source) {
+		return "Error matching term"
+	}
+
+	print() {
 		return
+	}
+
+	// Which matches to select (and pass through to check and emit)
+	select(matches) {
+		return matches
 	}
 }
 
@@ -103,9 +107,9 @@ Term.rest = class extends Term {
 	}
 }
 
-Term.any = class extends Term {
+Term.anything = class extends Term {
 	constructor() {
-		super("any")
+		super("anything")
 	}
 
 	match(source) {
@@ -144,6 +148,51 @@ Term.nothing = class extends Term {
 //===========//
 // OPERATORS //
 //===========//
+Term.list = class extends Term {
+	constructor(terms, skip = undefined) {
+		super("list")
+		this.terms = terms
+		this.skip = skip
+	}
+
+	match(source) {
+		const matches = []
+
+		for (const term of this.terms) {
+			// Skip terms
+			if (matches.length > 0 && this.skip !== undefined) {
+				const skipMatches = this.skip.match(source)
+				if (skipMatches.length === 0) {
+					const result = []
+					result.progress = matches.length
+					result.source = source
+					return result
+				}
+				source = source.slice(skipMatches.join("").length)
+			}
+
+			const termMatches = term.match(source)
+			if (termMatches.length === 0) {
+				const result = []
+				result.progress = matches.length
+				result.source = source
+				return result
+			}
+
+			matches.push(...termMatches)
+			source = source.slice(termMatches.join("").length)
+		}
+
+		return matches
+	}
+
+	throw(source) {
+		const result = this.match(source)
+		const term = this.terms[result.progress]
+		return term.throw(result.source)
+	}
+}
+
 Term.maybe = class extends Term {
 	constructor(term) {
 		super("maybe")
@@ -183,34 +232,30 @@ Term.many = class extends Term {
 	}
 }
 
-Term.list = class extends Term {
-	constructor(terms) {
-		super("list")
-		this.terms = terms
+// Match a term any number of times (including zero)
+Term.any = class extends Term {
+	constructor(term) {
+		super("any")
+		this.term = term
 	}
 
 	match(source) {
 		const matches = []
 
-		for (const term of this.terms) {
-			const termMatches = term.match(source)
+		while (true) {
+			const termMatches = this.term.match(source)
 			if (termMatches.length === 0) {
-				const result = []
-				result.progress = matches.length
-				result.source = source
-				return result
+				break
 			}
 
 			matches.push(...termMatches)
 			source = source.slice(termMatches.join("").length)
 		}
 
-		return matches
-	}
+		if (matches.length === 0) {
+			return [""]
+		}
 
-	throw(source) {
-		const result = this.match(source)
-		const term = this.terms[result.progress]
-		return term.throw(result.source)
+		return matches
 	}
 }

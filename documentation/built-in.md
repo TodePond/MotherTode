@@ -44,12 +44,12 @@ The `rest` term matches everything until the end of the file/source.
 match rest
 ```
 
-## Any
+## Anything
 
-The `any` term matches any character.
+The `anything` term matches any character.
 
 ```
-match any
+match anything
 ```
 
 ## Nothing
