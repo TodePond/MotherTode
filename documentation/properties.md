@@ -13,7 +13,7 @@ All properties are optional!
 
 | Property            | Language   | Description                                                | Default            |
 | ------------------- | ---------- | ---------------------------------------------------------- | ------------------ |
-| [`match`](match.md) | MotherTode | Term to match                                              | `anything`         |
+| [`match`](match.md) | MotherTode | Term to match                                              | `rest`             |
 | [`skip`](skip.md)   | MotherTode | Term to ignore in-between terms                            | `nothing`          |
 | [`then`](then.md)   | MotherTode | Term to match after this one                               | `nothing`          |
 | [`emit`](emit.md)   | JavaScript | What to output (after matching)                            | `(input) => input` |

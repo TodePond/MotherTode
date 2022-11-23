@@ -74,3 +74,24 @@ emit (name) => `Hello ${name}!`
 
 let Name = /[a-zA-Z]/+
 ```
+
+## Until
+
+When using an **any** or **many** operator, you can choose to carry on **until** a certain term is matches.<br>
+By default, they carry on until the end of the file/source.
+
+This matches any character until you get to a full-stop.
+
+```
+match any* until "."
+```
+
+## Before
+
+You can say what the term should be **before**.
+
+This only matches "ribbit" if it's before an exclamation mark.
+
+```
+match "ribbit" before "!"
+```

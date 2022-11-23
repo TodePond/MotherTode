@@ -40,23 +40,31 @@ match start "hello"
 
 The `end` keyword matches the end of the file/source.
 
-This matches anything until the end of the file.
+This matches everything until the end of the file/source.
 
 ```
 match { !end }
 ```
 
-## Anything
+## Rest
 
-The `anything` keyword matches anything (until the end of the file/source).
+The `rest` term matches everything until the end of the file/source.
 
 ```
-match anything
+match rest
+```
+
+## Any
+
+The `any` term matches any character.
+
+```
+match any
 ```
 
 ## Nothing
 
-The `nothing` keyword matches nothing. It's useful for emitting something without matching anything.
+The `nothing` term matches nothing. It's useful for emitting something without needing to match anything.
 
 ```
 match nothing
