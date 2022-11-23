@@ -189,6 +189,42 @@ const MotherTodeFrogasaurus = {}
 		
 				return matches
 			}
+		
+			throw(source) {
+				return this.term.throw(source)
+			}
+		}
+		
+		Term.list = class extends Term {
+			constructor(terms) {
+				super("list")
+				this.terms = terms
+			}
+		
+			match(source) {
+				const matches = []
+		
+				for (const term of this.terms) {
+					const termMatches = term.match(source)
+					if (termMatches.length === 0) {
+						const result = []
+						result.progress = matches.length
+						result.source = source
+						return result
+					}
+		
+					matches.push(...termMatches)
+					source = source.slice(termMatches.join("").length)
+				}
+		
+				return matches
+			}
+		
+			throw(source) {
+				const result = this.match(source)
+				const term = this.terms[result.progress]
+				return term.throw(result.source)
+			}
 		}
 		
 

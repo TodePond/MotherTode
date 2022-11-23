@@ -125,3 +125,18 @@ Deno.test("many", () => {
 	assertEquals(manyTerm.test("hellohello"), true)
 	assertEquals(manyTerm.test(""), false)
 })
+
+Deno.test("list", () => {
+	const listTerm = new Term.list([new Term.string("hello"), new Term.string("bye")])
+
+	assertEquals(listTerm.translate("hellobye"), "hellobye")
+	assertThrows(() => listTerm.translate("helloby"))
+	assertThrows(() => listTerm.translate("hello"))
+	assertThrows(() => listTerm.translate(""))
+
+	assertEquals(listTerm.match("hellobye"), ["hello", "bye"])
+	assertEquals(listTerm.match("helloby").length, 0)
+
+	assertEquals(listTerm.test("hellobye"), true)
+	assertEquals(listTerm.test("helloby"), false)
+})
