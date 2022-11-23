@@ -26,16 +26,6 @@ let Number = /[0-9]/ [self]
 let Number = /[0-9]/ [Number]
 ```
 
-## Start
-
-The `start` keyword matches the start of the file/source.
-
-This only matches "hello" when it is the first term in the file/source.
-
-```
-match start "hello"
-```
-
 ## End
 
 The `end` keyword matches the end of the file/source.

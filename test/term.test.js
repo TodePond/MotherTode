@@ -22,3 +22,13 @@ Deno.test("regular expression literal", () => {
 	assertEquals(helloTerm.match("Hello"), true)
 	assertEquals(helloTerm.match("Goodbye"), false)
 })
+
+Deno.test("rest term", () => {
+	const restTerm = new Term.rest()
+
+	assertEquals(restTerm.translate("Hello"), "Hello")
+	assertEquals(restTerm.translate("Goodbye"), "Goodbye")
+
+	assertEquals(restTerm.match("Hello"), true)
+	assertEquals(restTerm.match("Goodbye"), true)
+})

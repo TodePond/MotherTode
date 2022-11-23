@@ -42,6 +42,10 @@ const MotherTodeFrogasaurus = {}
 			throw(source) {
 				return true
 			}
+		
+			emit(source) {
+				return source
+			}
 		}
 		
 		//==========//
@@ -90,6 +94,53 @@ const MotherTodeFrogasaurus = {}
 		//===========//
 		// BUILT-INS //
 		//===========//
+		Term.rest = class extends Term {
+			constructor() {
+				super("rest")
+			}
+		}
+		
+		Term.any = class extends Term {
+			constructor() {
+				super("any")
+			}
+		
+			match(source) {
+				return source.length > 0
+			}
+		
+			emit(source) {
+				return source[0]
+			}
+		
+			error(source) {
+				return "Expected any character but found none"
+			}
+		}
+		
+		Term.end = class extends Term {
+			constructor() {
+				super("end")
+			}
+		
+			match(source) {
+				return source.length === 0
+			}
+		
+			error(source) {
+				return "Expected end of source but found more"
+			}
+		}
+		
+		Term.nothing = class extends Term {
+			constructor() {
+				super("nothing")
+			}
+		
+			emit(source) {
+				return ""
+			}
+		}
 		
 		//===========//
 		// OPERATORS //
