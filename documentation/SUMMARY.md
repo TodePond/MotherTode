@@ -20,7 +20,7 @@
 -   [Functions](functions.md)
 -   [Scope](scope.md)
 
-## Properties
+## Advanced Properties
 
 -   [Skip](skip.md)
 -   [Then](then.md)
