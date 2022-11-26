@@ -1,24 +1,27 @@
+//=========//
+// DEFAULT //
+//=========//
 export const Term = class {
 	constructor(type = "anonymous") {
 		this.type = type
 	}
 
 	// If the term matches the source, translate it
+	// Otherwise, (maybe) throw an error
 	translate(source) {
 		const matches = this.match(source)
 
 		if (matches.length > 0) {
 			const selected = this.select(matches)
 			if (this.check(...selected)) {
-				return this.emit(...selected)
+				const result = this.emit(...selected)
+				return this.then(result)
 			}
 		}
 
-		if (this.throw(source)) {
-			const error = this.throw(source)
-			if (error !== undefined) {
-				throw Error(error)
-			}
+		const error = this.throw(source)
+		if (error !== undefined) {
+			throw Error(error)
 		}
 	}
 
@@ -27,14 +30,14 @@ export const Term = class {
 		return this.match(source).length > 0 && this.check(source)
 	}
 
-	// Find a match for the term in the source
+	// Find matches for the term in the source
 	match(source) {
 		return [source]
 	}
 
-	// After translating, what to do with the result
-	then() {
-		return
+	// What to pass through to the check and emit functions
+	select(matches) {
+		return matches.flat(Infinity)
 	}
 
 	// What to emit if the term matches the source
@@ -47,24 +50,82 @@ export const Term = class {
 		return true
 	}
 
+	// After translating, what to do with the result
+	then(result) {
+		return result
+	}
+
 	// Error message to throw if the term does not match the source
 	throw(source) {
 		return "Error matching term"
 	}
 
-	print() {
-		return
-	}
-
-	// Which matches to select (and pass through to check and emit)
-	select(matches) {
-		return matches
+	// For debugging: What to translate (and print) when the term is created
+	print(message) {
+		if (message === undefined) return
+		return this.translate(message)
 	}
 }
 
-//==========//
-// LITERALS //
-//==========//
+//===========//
+// EXTENSION //
+//===========//
+Term.extension = class extends Term {
+	constructor(base, extension) {
+		super("extension")
+		this.base = base
+		this.extension = extension
+		Object.assign(this, base)
+		Object.assign(this, extension)
+	}
+
+	route(method, [args]) {
+		if (this.extension[method] !== undefined) {
+			return this.extension[method](args)
+		}
+		return this.base[method].apply(this, [args])
+	}
+
+	translate(source) {
+		return this.route("translate", [source])
+	}
+
+	test(source) {
+		return this.route("test", [source])
+	}
+
+	match(source) {
+		return this.route("match", [source])
+	}
+
+	select(matches) {
+		return this.route("select", [matches])
+	}
+
+	emit(...selected) {
+		return this.route("emit", [...selected])
+	}
+
+	check(...selected) {
+		return this.route("check", [...selected])
+	}
+
+	then(result) {
+		return this.route("then", [result])
+	}
+
+	throw(source) {
+		return this.route("throw", [source])
+	}
+
+	print(message) {
+		return this.route("print", [message])
+	}
+}
+
+//============//
+// PRIMITIVES //
+//============//
 Term.string = class extends Term {
 	constructor(string) {
 		super("string")
@@ -76,6 +137,9 @@ Term.string = class extends Term {
 	}
 
 	throw(source) {
+		if (source.length === 0) {
+			return `Expected '${this.string}' but found end of input`
+		}
 		return `Expected '${this.string}' but found '${source.slice(0, this.string.length)}'`
 	}
 }
@@ -94,83 +158,55 @@ Term.regExp = class extends Term {
 	throw(source) {
 		const SNIPPET_LENGTH = 15
 		const snippet = source.slice(0, SNIPPET_LENGTH)
-		return `Expected '${this.regExp}' but found '${snippet}'`
+		return `Expected ${this.regExp} but found '${snippet}'`
 	}
 }
 
 //===========//
 // BUILT-INS //
 //===========//
-Term.rest = class extends Term {
-	constructor() {
-		super("rest")
-	}
-}
-
-Term.anything = class extends Term {
-	constructor() {
-		super("anything")
-	}
-
+Term.rest = new Term.extension(new Term(), { type: "rest" })
+Term.anything = new Term.extension(new Term(), {
+	type: "anything",
 	match(source) {
 		return source.length > 0 ? [source[0]] : []
-	}
-
+	},
 	throw(source) {
-		return "Expected any character but found nothing"
-	}
-}
+		return "Expected any character but found end of input"
+	},
+})
 
-Term.end = class extends Term {
-	constructor() {
-		super("end")
-	}
-
+Term.end = new Term.extension(new Term(), {
+	type: "end",
 	match(source) {
 		return source.length === 0 ? [""] : []
-	}
-
+	},
 	throw(source) {
-		return "Expected end of source but found something"
-	}
-}
+		return `Expected end of input but found '${source[0]}'`
+	},
+})
 
-Term.nothing = class extends Term {
-	constructor() {
-		super("nothing")
-	}
-
+Term.nothing = new Term.extension(new Term(), {
+	type: "nothing",
 	match(source) {
 		return [""]
-	}
-}
+	},
+})
 
 //===========//
 // OPERATORS //
 //===========//
+// Match terms in sequence
 Term.list = class extends Term {
-	constructor(terms, skip = undefined) {
+	constructor(terms) {
 		super("list")
 		this.terms = terms
-		this.skip = skip
 	}
 
 	match(source) {
 		const matches = []
 
 		for (const term of this.terms) {
-			// Skip terms
-			if (matches.length > 0 && this.skip !== undefined) {
-				const skipMatches = this.skip.match(source)
-				if (skipMatches.length === 0) {
-					const result = []
-					result.progress = matches.length
-					result.source = source
-					return result
-				}
-				source = source.slice(skipMatches.join("").length)
-			}
-
 			const termMatches = term.match(source)
 			if (termMatches.length === 0) {
 				const result = []
@@ -179,7 +215,11 @@ Term.list = class extends Term {
 				return result
 			}
 
-			matches.push(...termMatches)
+			if (termMatches.length === 1) {
+				matches.push(termMatches[0])
+			} else {
+				matches.push(termMatches)
+			}
 			source = source.slice(termMatches.join("").length)
 		}
 
@@ -188,23 +228,28 @@ Term.list = class extends Term {
 
 	throw(source) {
 		const result = this.match(source)
-		const term = this.terms[result.progress]
+		const term = result.progress === -1 ? this.skip : this.terms[result.progress]
 		return term.throw(result.source)
 	}
 }
 
+// Optionally match a term
 Term.maybe = class extends Term {
 	constructor(term) {
-		super("maybe")
-		this.term = term
-	}
-
-	match(source) {
-		const matches = this.term.match(source)
-		return matches.length > 0 ? matches : [""]
+		return new Term.extension(term, {
+			type: "maybe",
+			match(source) {
+				const matches = term.match(source)
+				if (matches.length === 0) {
+					return [""]
+				}
+				return matches
+			},
+		})
 	}
 }
 
+// Match a term one or more times
 Term.many = class extends Term {
 	constructor(term) {
 		super("many")
@@ -232,7 +277,7 @@ Term.many = class extends Term {
 	}
 }
 
-// Match a term any number of times (including zero)
+// Match a term zero or more times
 Term.any = class extends Term {
 	constructor(term) {
 		super("any")
