@@ -5,7 +5,7 @@ import { Term } from "../mothertode-import.js"
 // PRIMITIVES //
 //============//
 Deno.test("string", () => {
-	const helloTerm = new Term.string("hello")
+	const helloTerm = Term.string("hello")
 
 	assertEquals(helloTerm.translate("hello"), "hello")
 	assertThrows(() => helloTerm.translate("hi"), Error, "Expected 'hello' but found 'hi'")
@@ -18,7 +18,7 @@ Deno.test("string", () => {
 })
 
 Deno.test("regular expression", () => {
-	const helloTerm = new Term.regExp(/hello/)
+	const helloTerm = Term.regExp(/hello/)
 
 	assertEquals(helloTerm.translate("hello"), "hello")
 	assertThrows(() => helloTerm.translate("hi"), Error, "Expected /hello/ but found 'hi'")
@@ -29,7 +29,7 @@ Deno.test("regular expression", () => {
 	assertEquals(helloTerm.test("hello"), true)
 	assertEquals(helloTerm.test("hi"), false)
 
-	const yoTerm = new Term.regExp(/(?:yo)+/)
+	const yoTerm = Term.regExp(/(?:yo)+/)
 	assertEquals(yoTerm.translate("yo"), "yo")
 	assertEquals(yoTerm.translate("yoyoyo"), "yoyoyo")
 
@@ -79,7 +79,7 @@ Deno.test("end", () => {
 	const endTerm = Term.end
 
 	assertEquals(endTerm.translate(""), "")
-	assertThrows(() => endTerm.translate("hello"), Error, "Expected end of input but found 'h'")
+	assertThrows(() => endTerm.translate("hello"), Error, "Expected end of input but found 'hello'")
 
 	assertEquals(endTerm.match(""), [""])
 	assertEquals(endTerm.match("hello"), [])
@@ -104,9 +104,77 @@ Deno.test("nothing", () => {
 //===========//
 // OPERATORS //
 //===========//
+Deno.test("list", () => {
+	const listTerm = Term.list([Term.string("hello"), Term.string("hi")])
+
+	assertEquals(listTerm.translate("hellohi"), "hellohi")
+	assertThrows(() => listTerm.translate("helloh"), Error, "Expected 'hi' but found 'h'")
+	assertThrows(() => listTerm.translate("hello"), Error, "Expected 'hi' but found end of input")
+	assertThrows(() => listTerm.translate(""), Error, "Expected 'hello' but found end of input")
+
+	assertEquals(listTerm.match("hellohi"), [["hello"], ["hi"]])
+	assertEquals(listTerm.match("helloh").length, 0)
+
+	assertEquals(listTerm.test("hellohi"), true)
+	assertEquals(listTerm.test("helloh"), false)
+
+	const customTerm = Term.emit(listTerm, (hello, hi) => `${hello} ${hi}`)
+	assertEquals(customTerm.translate("hellohi"), "hello hi")
+	assertThrows(() => customTerm.translate("helloh"), Error, "Expected 'hi' but found 'h'")
+
+	const shoutTerm = Term.emit(Term.string("hello"), (hello) => hello + "!")
+	const listShoutTerm = Term.list([shoutTerm, shoutTerm])
+	assertEquals(listShoutTerm.translate("hellohello"), "hello!hello!")
+	assertThrows(() => listShoutTerm.translate("hello"), Error, "Expected 'hello' but found end of input")
+})
+
+Deno.test("list - nested", () => {
+	const listTerm = Term.list([Term.string("hello"), Term.list([Term.string("hi"), Term.string("yo")])])
+
+	assertEquals(listTerm.translate("hellohiyo"), "hellohiyo")
+	assertThrows(() => listTerm.translate("hellohi"), Error, "Expected 'yo' but found end of input")
+	assertThrows(() => listTerm.translate("hello"), Error, "Expected 'hi' but found end of input")
+	assertThrows(() => listTerm.translate(""), Error, "Expected 'hello' but found end of input")
+
+	assertEquals(listTerm.match("hellohiyo"), [["hello"], [["hi"], ["yo"]]])
+	assertEquals(listTerm.match("hellohi").length, 0)
+
+	assertEquals(listTerm.test("hellohiyo"), true)
+	assertEquals(listTerm.test("hellohi"), false)
+
+	const listTerm2 = Term.list([
+		Term.string("hello"),
+		Term.list([Term.string("hi"), Term.string("yo")]),
+		Term.string("hi"),
+	])
+
+	assertEquals(listTerm2.translate("hellohiyohi"), "hellohiyohi")
+	assertThrows(() => listTerm2.translate("hellohiyo"), Error, "Expected 'hi' but found end of input")
+	assertThrows(() => listTerm2.translate("hellohi"), Error, "Expected 'yo' but found end of input")
+	assertThrows(() => listTerm2.translate("hello"), Error, "Expected 'hi' but found end of input")
+	assertThrows(() => listTerm2.translate(""), Error, "Expected 'hello' but found end of input")
+
+	assertEquals(listTerm2.match("hellohiyohi"), [["hello"], [["hi"], ["yo"]], ["hi"]])
+	assertEquals(listTerm2.match("hellohiyo").length, 0)
+
+	assertEquals(listTerm2.test("hellohiyohi"), true)
+	assertEquals(listTerm2.test("hellohiyo"), false)
+
+	const customTerm = Term.emit(listTerm, (hello, hiyo) => `${hello} ${hiyo}`)
+	assertEquals(customTerm.translate("hellohiyo"), "hello hiyo")
+	assertEquals(customTerm.match("hellohiyo"), [["hello"], [["hi"], ["yo"]]])
+	assertThrows(() => customTerm.translate("hellohi"), Error, "Expected 'yo' but found end of input")
+
+	const shoutTerm = Term.emit(Term.string("hello"), (hello) => hello + "!")
+	const listShoutTerm = Term.list([shoutTerm, Term.list([shoutTerm, shoutTerm])])
+	assertEquals(listShoutTerm.translate("hellohellohello"), "hello!hello!hello!")
+	assertEquals(listShoutTerm.match("hellohellohello"), [["hello"], [["hello"], ["hello"]]])
+	assertThrows(() => listShoutTerm.translate("hellohello"), Error, "Expected 'hello' but found end of input")
+})
+
 Deno.test("maybe", () => {
-	const helloTerm = new Term.string("hello")
-	const maybeTerm = new Term.maybe(helloTerm)
+	const helloTerm = Term.string("hello")
+	const maybeTerm = Term.maybe(helloTerm)
 
 	assertEquals(maybeTerm.translate("hello"), "hello")
 	assertEquals(maybeTerm.translate("hi"), "")
@@ -117,105 +185,58 @@ Deno.test("maybe", () => {
 	assertEquals(maybeTerm.test("hello"), true)
 	assertEquals(maybeTerm.test("hi"), true)
 
-	const customTerm = new Term.maybe(
-		new Term.extension(helloTerm, {
-			emit(string) {
-				return string + "!"
-			},
-		}),
-	)
-
+	const customTerm = Term.emit(maybeTerm, (string) => string + "!")
+	assertEquals(customTerm.match("hello"), ["hello"])
 	assertEquals(customTerm.translate("hello"), "hello!")
 	assertEquals(customTerm.translate("hi"), "!")
+
+	const shoutTerm = Term.emit(Term.string("hello"), (hello) => hello + "!")
+	const maybeShoutTerm = Term.maybe(shoutTerm)
+	assertEquals(maybeShoutTerm.match("hello"), ["hello"])
+	assertEquals(maybeShoutTerm.translate("hello"), "hello!")
+	assertEquals(maybeShoutTerm.match("hi"), [""])
 })
 
 Deno.test("many", () => {
-	const manyTerm = new Term.many(new Term.string("hello"))
+	const manyTerm = Term.many(Term.string("hello"))
 
 	assertEquals(manyTerm.translate("hello"), "hello")
 	assertEquals(manyTerm.translate("hellohello"), "hellohello")
 	assertThrows(() => manyTerm.translate(""), Error, "Expected 'hello' but found end of input")
 
-	assertEquals(manyTerm.match("hello"), ["hello"])
-	assertEquals(manyTerm.match("hellohello"), ["hello", "hello"])
+	assertEquals(manyTerm.match("hello"), [["hello"]])
+	assertEquals(manyTerm.match("hellohello"), [["hello"], ["hello"]])
 	assertEquals(manyTerm.match(""), [])
 
 	assertEquals(manyTerm.test("hello"), true)
 	assertEquals(manyTerm.test("hellohello"), true)
 	assertEquals(manyTerm.test(""), false)
+
+	const shoutTerm = Term.emit(Term.string("hello"), (hello) => hello + "!")
+	const manyShoutTerm = Term.many(shoutTerm)
+	assertEquals(manyShoutTerm.translate("hello"), "hello!")
+	assertEquals(manyShoutTerm.translate("hellohello"), "hello!hello!")
 })
 
-Deno.test("list", () => {
-	const listTerm = new Term.list([new Term.string("hello"), new Term.string("hi")])
+// Test matching zero or more terms
+Deno.test("any", () => {
+	const anyTerm = Term.any(Term.string("hello"))
 
-	assertEquals(listTerm.translate("hellohi"), "hellohi")
-	assertThrows(() => listTerm.translate("helloh"), Error, "Expected 'hi' but found 'h'")
-	assertThrows(() => listTerm.translate("hello"), Error, "Expected 'hi' but found end of input")
-	assertThrows(() => listTerm.translate(""), Error, "Expected 'hello' but found end of input")
+	assertEquals(anyTerm.translate("hello"), "hello")
+	assertEquals(anyTerm.translate("hellohello"), "hellohello")
+	assertEquals(anyTerm.translate(""), "")
 
-	assertEquals(listTerm.match("hellohi"), ["hello", "hi"])
-	assertEquals(listTerm.match("helloh").length, 0)
+	assertEquals(anyTerm.match("hello"), [["hello"]])
+	assertEquals(anyTerm.match("hellohello"), [["hello"], ["hello"]])
+	assertEquals(anyTerm.match(""), [""])
 
-	assertEquals(listTerm.test("hellohi"), true)
-	assertEquals(listTerm.test("helloh"), false)
-})
+	assertEquals(anyTerm.test("hello"), true)
+	assertEquals(anyTerm.test("hellohello"), true)
+	assertEquals(anyTerm.test(""), true)
 
-Deno.test("list - nested", () => {
-	const listTerm = new Term.list([
-		new Term.string("hello"),
-		new Term.list([new Term.string("hi"), new Term.string("yo")]),
-	])
-
-	assertEquals(listTerm.translate("hellohiyo"), "hellohiyo")
-	assertThrows(() => listTerm.translate("hellohi"), Error, "Expected 'yo' but found end of input")
-	assertThrows(() => listTerm.translate("hello"), Error, "Expected 'hi' but found end of input")
-	assertThrows(() => listTerm.translate(""), Error, "Expected 'hello' but found end of input")
-
-	assertEquals(listTerm.match("hellohiyo"), ["hello", ["hi", "yo"]])
-	assertEquals(listTerm.match("hellohi").length, 0)
-
-	assertEquals(listTerm.test("hellohiyo"), true)
-	assertEquals(listTerm.test("hellohi"), false)
-
-	const listTerm2 = new Term.list([
-		new Term.string("hello"),
-		new Term.list([new Term.string("hi"), new Term.string("yo")]),
-		new Term.string("hi"),
-	])
-
-	assertEquals(listTerm2.translate("hellohiyohi"), "hellohiyohi")
-	assertThrows(() => listTerm2.translate("hellohiyo"), Error, "Expected 'hi' but found end of input")
-	assertThrows(() => listTerm2.translate("hellohi"), Error, "Expected 'yo' but found end of input")
-	assertThrows(() => listTerm2.translate("hello"), Error, "Expected 'hi' but found end of input")
-	assertThrows(() => listTerm2.translate(""), Error, "Expected 'hello' but found end of input")
-
-	assertEquals(listTerm2.match("hellohiyohi"), ["hello", ["hi", "yo"], "hi"])
-	assertEquals(listTerm2.match("hellohiyo").length, 0)
-
-	assertEquals(listTerm2.test("hellohiyohi"), true)
-	assertEquals(listTerm2.test("hellohiyo"), false)
-})
-
-//============//
-// EXTENSIONS //
-//============//
-Deno.test("custom - emit", () => {
-	const helloTerm = new Term.string("hello")
-	const customTerm = new Term.extension(helloTerm, {
-		emit() {
-			return this.string.toUpperCase() + "!"
-		},
-	})
-
-	assertEquals(customTerm.translate("hello"), "HELLO!")
-	assertThrows(() => customTerm.translate("hi"), Error, "Expected 'hello' but found 'hi'")
-
-	assertEquals(customTerm.match("hello"), ["hello"])
-	assertEquals(customTerm.match("hi"), [])
-
-	assertEquals(customTerm.test("hello"), true)
-	assertEquals(customTerm.test("hi"), false)
-
-	const listTerm = new Term.list([customTerm, customTerm])
-	//assertEquals(listTerm.translate("hellohello"), "HELLO!HELLO!")
+	const shoutTerm = Term.emit(Term.string("hello"), (hello) => hello + "!")
+	const anyShoutTerm = Term.any(shoutTerm)
+	assertEquals(anyShoutTerm.translate("hello"), "hello!")
+	assertEquals(anyShoutTerm.translate("hellohello"), "hello!hello!")
+	assertEquals(anyShoutTerm.translate(""), "")
 })

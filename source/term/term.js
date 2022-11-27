@@ -1,18 +1,38 @@
+export const Term = {}
+
+/*
+
+type Tree<T> = Array<T | Tree<T>>
+
+type Term = {
+	type: string
+	translate: (source: string) => string
+	test: (source: string) => boolean
+	throw: (source: string) => string | undefined
+	match: (source: string) => Tree<string>
+	select: (...matches: string[]) => Array<string>
+	emit: (...selected: string[]) => string
+	check: (...selected: string[]) => string
+	then: (result: string) => string
+}
+
+*/
+
 //=========//
 // DEFAULT //
 //=========//
-export const Term = class {
-	constructor(type = "anonymous") {
-		this.type = type
-	}
+Term.ERROR_SNIPPET_LENGTH = 20
 
-	// If the term matches the source, translate it
-	// Otherwise, (maybe) throw an error
+Term.default = {
+	type: "anonymous",
+
+	// If the source matches the term, translate it
+	// Otherwise, throw an error (if the term has one)
 	translate(source) {
 		const matches = this.match(source)
 
 		if (matches.length > 0) {
-			const selected = this.select(matches)
+			const selected = this.select(...matches)
 			if (this.check(...selected)) {
 				const result = this.emit(...selected)
 				return this.then(result)
@@ -23,284 +43,284 @@ export const Term = class {
 		if (error !== undefined) {
 			throw Error(error)
 		}
-	}
+	},
 
 	// Does the source satisfy the term?
 	test(source) {
-		return this.match(source).length > 0 && this.check(source)
-	}
+		const matches = this.match(source)
+		return matches.length > 0
+	},
 
 	// Find matches for the term in the source
 	match(source) {
 		return [source]
-	}
+	},
 
-	// What to pass through to the check and emit functions
-	select(matches) {
+	// What to pass to the check and emit functions
+	select(...matches) {
 		return matches.flat(Infinity)
-	}
+	},
 
-	// What to emit if the term matches the source
-	emit(...selected) {
-		return selected.join("")
-	}
-
-	// Additional checks to perform after matching
+	// Additional check to perform after selecting
 	check(...selected) {
 		return true
-	}
+	},
 
-	// After translating, what to do with the result
+	// What to emit if the term matches
+	emit(...selected) {
+		return selected.join("")
+	},
+
+	// What to do after emitting
 	then(result) {
 		return result
-	}
+	},
 
-	// Error message to throw if the term does not match the source
+	// Error message to throw if the term does not match
 	throw(source) {
-		return "Error matching term"
-	}
-
-	// For debugging: What to translate (and print) when the term is created
-	print(message) {
-		if (message === undefined) return
-		return this.translate(message)
-	}
-}
-
-//===========//
-// EXTENSION //
-//===========//
-Term.extension = class extends Term {
-	constructor(base, extension) {
-		super("extension")
-		this.base = base
-		this.extension = extension
-		Object.assign(this, base)
-		Object.assign(this, extension)
-	}
-
-	route(method, [args]) {
-		if (this.extension[method] !== undefined) {
-			return this.extension[method](args)
-		}
-		return this.base[method].apply(this, [args])
-	}
-
-	translate(source) {
-		return this.route("translate", [source])
-	}
-
-	test(source) {
-		return this.route("test", [source])
-	}
-
-	match(source) {
-		return this.route("match", [source])
-	}
-
-	select(matches) {
-		return this.route("select", [matches])
-	}
-
-	emit(...selected) {
-		return this.route("emit", [...selected])
-	}
-
-	check(...selected) {
-		return this.route("check", [...selected])
-	}
-
-	then(result) {
-		return this.route("then", [result])
-	}
-
-	throw(source) {
-		return this.route("throw", [source])
-	}
-
-	print(message) {
-		return this.route("print", [message])
-	}
+		const snippet = source.slice(0, Term.ERROR_SNIPPET_LENGTH)
+		return `Expected '${this.type}' term but found '${snippet}'`
+	},
 }
 
 //============//
 // PRIMITIVES //
 //============//
-Term.string = class extends Term {
-	constructor(string) {
-		super("string")
-		this.string = string
-	}
+Term.string = (string) => ({
+	...Term.default,
+	type: "string",
 
 	match(source) {
-		return source.startsWith(this.string) ? [this.string] : []
-	}
+		return source.startsWith(string) ? [string] : []
+	},
 
 	throw(source) {
 		if (source.length === 0) {
-			return `Expected '${this.string}' but found end of input`
+			return `Expected '${string}' but found end of input`
 		}
-		return `Expected '${this.string}' but found '${source.slice(0, this.string.length)}'`
-	}
-}
+		const snippet = source.slice(0, string.length)
+		return `Expected '${string}' but found '${snippet}'`
+	},
+})
 
-Term.regExp = class extends Term {
-	constructor(regExp) {
-		super("regExp")
-		this.regExp = regExp
-	}
+Term.regExp = (regExp) => ({
+	...Term.default,
+	type: "regExp",
 
 	match(source) {
-		const matches = source.match(this.regExp)
-		return matches ? [...matches] : []
-	}
+		const matches = source.match(regExp)
+		return matches === null ? [] : [...matches]
+	},
 
 	throw(source) {
-		const SNIPPET_LENGTH = 15
-		const snippet = source.slice(0, SNIPPET_LENGTH)
-		return `Expected ${this.regExp} but found '${snippet}'`
-	}
-}
+		if (source.length === 0) {
+			return `Expected ${regExp} term but found end of input`
+		}
+
+		const snippet = source.slice(0, Term.ERROR_SNIPPET_LENGTH)
+		return `Expected ${regExp} but found '${snippet}'`
+	},
+})
 
 //===========//
 // BUILT-INS //
 //===========//
-Term.rest = new Term.extension(new Term(), { type: "rest" })
-Term.anything = new Term.extension(new Term(), {
+Term.rest = {
+	...Term.default,
+	type: "rest",
+}
+
+Term.anything = {
+	...Term.default,
 	type: "anything",
+
 	match(source) {
 		return source.length > 0 ? [source[0]] : []
 	},
-	throw(source) {
-		return "Expected any character but found end of input"
-	},
-})
 
-Term.end = new Term.extension(new Term(), {
+	throw(source) {
+		return `Expected any character but found end of input`
+	},
+}
+
+Term.end = {
+	...Term.default,
 	type: "end",
+
 	match(source) {
 		return source.length === 0 ? [""] : []
 	},
-	throw(source) {
-		return `Expected end of input but found '${source[0]}'`
-	},
-})
 
-Term.nothing = new Term.extension(new Term(), {
+	throw(source) {
+		const snippet = source.slice(0, Term.ERROR_SNIPPET_LENGTH)
+		return `Expected end of input but found '${snippet}'`
+	},
+}
+
+Term.nothing = {
+	...Term.default,
 	type: "nothing",
+
 	match(source) {
 		return [""]
 	},
+}
+
+//==========//
+// OVERRIDE //
+//==========//
+Term.emit = (term, emit) => ({
+	...term,
+	emit,
+})
+
+Term.check = (term, check) => ({
+	...term,
+	check,
 })
 
 //===========//
 // OPERATORS //
 //===========//
 // Match terms in sequence
-Term.list = class extends Term {
-	constructor(terms) {
-		super("list")
-		this.terms = terms
-	}
+Term.list = (terms) => ({
+	...Term.default,
+	type: "list",
 
 	match(source) {
 		const matches = []
 
-		for (const term of this.terms) {
-			const termMatches = term.match(source)
-			if (termMatches.length === 0) {
+		for (const term of terms) {
+			const match = term.match(source)
+			if (match.length === 0) {
 				const result = []
 				result.progress = matches.length
 				result.source = source
 				return result
 			}
 
-			if (termMatches.length === 1) {
-				matches.push(termMatches[0])
-			} else {
-				matches.push(termMatches)
-			}
-			source = source.slice(termMatches.join("").length)
+			matches.push(match)
+			source = source.slice(match.join("").length)
 		}
 
 		return matches
-	}
+	},
+
+	// Translate each match based on its term
+	select(...matches) {
+		const selected = []
+
+		for (let i = 0; i < terms.length; i++) {
+			const term = terms[i]
+			const match = matches[i]
+			const termSelected = term.select(...match)
+			const termEmitted = term.emit(...termSelected)
+			selected.push(termEmitted)
+		}
+
+		return selected
+	},
 
 	throw(source) {
 		const result = this.match(source)
-		const term = result.progress === -1 ? this.skip : this.terms[result.progress]
+		const term = terms[result.progress]
 		return term.throw(result.source)
-	}
-}
+	},
+})
 
 // Optionally match a term
-Term.maybe = class extends Term {
-	constructor(term) {
-		return new Term.extension(term, {
-			type: "maybe",
-			match(source) {
-				const matches = term.match(source)
-				if (matches.length === 0) {
-					return [""]
-				}
-				return matches
-			},
-		})
-	}
-}
+Term.maybe = (term) => ({
+	...term,
+	type: "maybe",
+	match(source) {
+		const matches = term.match(source)
+		if (matches.length === 0) {
+			return [""]
+		}
+		return matches
+	},
+})
 
 // Match a term one or more times
-Term.many = class extends Term {
-	constructor(term) {
-		super("many")
-		this.term = term
-	}
-
+Term.many = (term) => ({
+	...term,
+	type: "many",
 	match(source) {
 		const matches = []
 
 		while (true) {
-			const termMatches = this.term.match(source)
-			if (termMatches.length === 0) {
+			const match = term.match(source)
+			if (match.length === 0) {
 				break
 			}
 
-			matches.push(...termMatches)
-			source = source.slice(termMatches.join("").length)
+			matches.push(match)
+			source = source.slice(match.join("").length)
 		}
 
 		return matches
-	}
+	},
 
-	throw(source) {
-		return this.term.throw(source)
-	}
-}
+	// Translate each match
+	select(...matches) {
+		const selected = []
+
+		for (const match of matches) {
+			const termSelected = term.select(...match)
+			const termEmitted = term.emit(...termSelected)
+			selected.push(termEmitted)
+		}
+
+		return selected
+	},
+
+	emit(...selected) {
+		return selected.join("")
+	},
+})
 
 // Match a term zero or more times
-Term.any = class extends Term {
-	constructor(term) {
-		super("any")
-		this.term = term
-	}
+Term.any = (term) => ({
+	...term,
+	type: "any",
 
 	match(source) {
 		const matches = []
 
 		while (true) {
-			const termMatches = this.term.match(source)
-			if (termMatches.length === 0) {
+			const match = term.match(source)
+			if (match.length === 0) {
 				break
 			}
 
-			matches.push(...termMatches)
-			source = source.slice(termMatches.join("").length)
+			matches.push(match)
+			source = source.slice(match.join("").length)
 		}
 
 		if (matches.length === 0) {
 			return [""]
 		}
-
 		return matches
-	}
-}
+	},
+
+	// Translate each match
+	select(...matches) {
+		if (matches.length === 1 && matches[0] === "") {
+			return []
+		}
+
+		const selected = []
+
+		for (const match of matches) {
+			const termSelected = term.select(...match)
+			const termEmitted = term.emit(...termSelected)
+			selected.push(termEmitted)
+		}
+
+		return selected
+	},
+
+	emit(...selected) {
+		return selected.join("")
+	},
+})
