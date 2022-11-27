@@ -280,8 +280,25 @@ Deno.test("and", () => {
 
 	const andTerm2 = Term.and(Term.regExp(/[yo]+/), Term.string("yo"))
 	assertEquals(andTerm2.translate("yo"), "yo")
-	assertThrows(() => andTerm2.translate("yoyo"), Error, 'Expected "yo" but found "yoyo"')
+	assertEquals(andTerm2.translate("yoyo"), "yo")
 
 	assertEquals(andTerm2.match("yo"), ["yo"])
-	assertEquals(andTerm2.match("yoyo").length, 0)
+	assertEquals(andTerm2.match("yoyo"), ["yo"])
+})
+
+Deno.test("not", () => {
+	const notTerm = Term.not(Term.string("hello"))
+
+	assertEquals(notTerm.translate("hi"), "hi")
+	assertThrows(() => notTerm.translate("hello"), Error, 'Expected !"hello" but found "hello"')
+
+	assertEquals(notTerm.match("hi"), ["hi"])
+	assertEquals(notTerm.match("hello").length, 0)
+
+	const notTerm2 = Term.and(Term.regExp(/[a-z]+/), Term.not(Term.string("hello")))
+	assertEquals(notTerm2.translate("hi"), "hi")
+	assertThrows(() => notTerm2.translate("hello"), Error, 'Expected !"hello" but found "hello"')
+
+	assertEquals(notTerm2.match("hi"), ["hi"])
+	assertEquals(notTerm2.match("hello").length, 0)
 })

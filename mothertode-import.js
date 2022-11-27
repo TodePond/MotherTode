@@ -417,24 +417,12 @@ const MotherTodeFrogasaurus = {}
 		
 			match(source) {
 				let matches = []
-				let snippet = undefined
 		
 				for (const term of terms) {
 					const match = term.match(source)
 					if (match.length === 0) {
 						const result = []
 						result.term = term
-						result.type = "failure"
-						return result
-					}
-		
-					const termSnippet = match.flat(Infinity).join("")
-					if (snippet === undefined) {
-						snippet = termSnippet
-					} else if (snippet !== termSnippet) {
-						const result = []
-						result.term = term
-						result.type = "different"
 						return result
 					}
 		
@@ -461,6 +449,23 @@ const MotherTodeFrogasaurus = {}
 		
 			toString() {
 				return `${"("}${terms.join(" & ")}${")"}`
+			},
+		})
+		
+		Term.not = (term) => ({
+			...Term.default,
+			type: "not",
+		
+			match(source) {
+				const match = term.match(source)
+				if (match.length === 0) {
+					return [source]
+				}
+				return []
+			},
+		
+			toString() {
+				return `!${term}`
 			},
 		})
 		
