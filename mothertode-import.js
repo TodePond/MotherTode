@@ -14,7 +14,7 @@ const MotherTodeFrogasaurus = {}
 		
 		/*
 		
-		type Tree<T> = Array<T | Tree<T>>
+		type Tree<T> = [T] | Array<Tree<T>>
 		
 		type Term = {
 			type: string
