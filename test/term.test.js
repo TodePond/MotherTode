@@ -105,7 +105,7 @@ Deno.test("nothing", () => {
 // OPERATORS //
 //===========//
 Deno.test("list", () => {
-	const listTerm = Term.list(Term.string("hello"), Term.string("hi"))
+	const listTerm = Term.list([Term.string("hello"), Term.string("hi")])
 
 	assertEquals(listTerm.translate("hellohi"), "hellohi")
 	assertThrows(() => listTerm.translate("helloh"), Error, 'Expected "hi" but found "h"')
@@ -118,18 +118,18 @@ Deno.test("list", () => {
 	assertEquals(listTerm.test("hellohi"), true)
 	assertEquals(listTerm.test("helloh"), false)
 
-	const customTerm = Term.emit(listTerm, (hello, hi) => `${hello} ${hi}`)
+	const customTerm = Term.emit(listTerm, ([hello, hi]) => `${hello} ${hi}`)
 	assertEquals(customTerm.translate("hellohi"), "hello hi")
 	assertThrows(() => customTerm.translate("helloh"), Error, 'Expected "hi" but found "h"')
 
 	const shoutTerm = Term.emit(Term.string("hello"), (hello) => hello + "!")
-	const listShoutTerm = Term.list(shoutTerm, shoutTerm)
+	const listShoutTerm = Term.list([shoutTerm, shoutTerm])
 	assertEquals(listShoutTerm.translate("hellohello"), "hello!hello!")
 	assertThrows(() => listShoutTerm.translate("hello"), Error, 'Expected "hello" but found end of input')
 })
 
 Deno.test("list - nested", () => {
-	const listTerm = Term.list(Term.string("hello"), Term.list(Term.string("hi"), Term.string("yo")))
+	const listTerm = Term.list([Term.string("hello"), Term.list([Term.string("hi"), Term.string("yo")])])
 
 	assertEquals(listTerm.translate("hellohiyo"), "hellohiyo")
 	assertThrows(() => listTerm.translate("hellohi"), Error, 'Expected "yo" but found end of input')
@@ -142,11 +142,11 @@ Deno.test("list - nested", () => {
 	assertEquals(listTerm.test("hellohiyo"), true)
 	assertEquals(listTerm.test("hellohi"), false)
 
-	const listTerm2 = Term.list(
+	const listTerm2 = Term.list([
 		Term.string("hello"),
-		Term.list(Term.string("hi"), Term.string("yo")),
+		Term.list([Term.string("hi"), Term.string("yo")]),
 		Term.string("hi"),
-	)
+	])
 
 	assertEquals(listTerm2.translate("hellohiyohi"), "hellohiyohi")
 	assertThrows(() => listTerm2.translate("hellohiyo"), Error, 'Expected "hi" but found end of input')
@@ -160,13 +160,13 @@ Deno.test("list - nested", () => {
 	assertEquals(listTerm2.test("hellohiyohi"), true)
 	assertEquals(listTerm2.test("hellohiyo"), false)
 
-	const customTerm = Term.emit(listTerm, (hello, hiyo) => `${hello} ${hiyo}`)
+	const customTerm = Term.emit(listTerm, ([hello, hiyo]) => `${hello} ${hiyo}`)
 	assertEquals(customTerm.translate("hellohiyo"), "hello hiyo")
 	assertEquals(customTerm.match("hellohiyo"), [["hello"], [["hi"], ["yo"]]])
 	assertThrows(() => customTerm.translate("hellohi"), Error, 'Expected "yo" but found end of input')
 
 	const shoutTerm = Term.emit(Term.string("hello"), (hello) => hello + "!")
-	const listShoutTerm = Term.list(shoutTerm, Term.list(shoutTerm, shoutTerm))
+	const listShoutTerm = Term.list([shoutTerm, Term.list([shoutTerm, shoutTerm])])
 	assertEquals(listShoutTerm.translate("hellohellohello"), "hello!hello!hello!")
 	assertEquals(listShoutTerm.match("hellohellohello"), [["hello"], [["hello"], ["hello"]]])
 	assertThrows(() => listShoutTerm.translate("hellohello"), Error, 'Expected "hello" but found end of input')
@@ -242,7 +242,7 @@ Deno.test("any", () => {
 })
 
 Deno.test("or", () => {
-	const orTerm = Term.or(Term.string("hello"), Term.string("hi"))
+	const orTerm = Term.or([Term.string("hello"), Term.string("hi")])
 
 	assertEquals(orTerm.translate("hello"), "hello")
 	assertEquals(orTerm.translate("hi"), "hi")
@@ -256,13 +256,13 @@ Deno.test("or", () => {
 	assertEquals(orTerm.test("hi"), true)
 	assertEquals(orTerm.test("yo"), false)
 
-	const shoutTerm = Term.emit(Term.string("hello"), (hello) => hello + "!")
-	const orShoutTerm = Term.or(shoutTerm, Term.string("hi"))
+	const shoutTerm = Term.emit(Term.string("hello"), ([hello]) => hello + "!")
+	const orShoutTerm = Term.or([shoutTerm, Term.string("hi")])
 	assertEquals(orShoutTerm.translate("hello"), "hello!")
 	assertEquals(orShoutTerm.translate("hi"), "hi")
 	assertThrows(() => orShoutTerm.translate("yo"), Error, 'Expected ("hello" | "hi") but found "yo"')
 
-	const orTerm2 = Term.or(Term.string("hello"), Term.string("hi"), Term.string("yo"))
+	const orTerm2 = Term.or([Term.string("hello"), Term.string("hi"), Term.string("yo")])
 	assertEquals(orTerm2.translate("hello"), "hello")
 	assertEquals(orTerm2.translate("hi"), "hi")
 	assertEquals(orTerm2.translate("yo"), "yo")
@@ -270,7 +270,7 @@ Deno.test("or", () => {
 })
 
 Deno.test("and", () => {
-	const andTerm = Term.and(Term.string("hello"), Term.regExp(/hello/))
+	const andTerm = Term.and([Term.string("hello"), Term.regExp(/hello/)])
 
 	assertEquals(andTerm.translate("hello"), "hello")
 	assertThrows(() => andTerm.translate("hi"), Error, 'Expected "hello" but found "hi"')
@@ -278,7 +278,7 @@ Deno.test("and", () => {
 	assertEquals(andTerm.match("hello"), ["hello"])
 	assertEquals(andTerm.match("hi").length, 0)
 
-	const andTerm2 = Term.and(Term.regExp(/[yo]+/), Term.string("yo"))
+	const andTerm2 = Term.and([Term.regExp(/[yo]+/), Term.string("yo")])
 	assertEquals(andTerm2.translate("yo"), "yo")
 	assertEquals(andTerm2.translate("yoyo"), "yo")
 
@@ -295,7 +295,7 @@ Deno.test("not", () => {
 	assertEquals(notTerm.match("hi"), ["hi"])
 	assertEquals(notTerm.match("hello").length, 0)
 
-	const notTerm2 = Term.and(Term.regExp(/[a-z]+/), Term.not(Term.string("hello")))
+	const notTerm2 = Term.and([Term.regExp(/[a-z]+/), Term.not(Term.string("hello"))])
 	assertEquals(notTerm2.translate("hi"), "hi")
 	assertThrows(() => notTerm2.translate("hello"), Error, 'Expected !"hello" but found "hello"')
 

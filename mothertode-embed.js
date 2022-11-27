@@ -22,9 +22,9 @@ const MotherTodeFrogasaurus = {}
 			test: (source: string) => boolean
 			throw: (source: string) => string | undefined
 			match: (source: string) => Tree<string>
-			select: (...matches: string[]) => Array<string>
-			emit: (...selected: string[]) => string
-			check: (...selected: string[]) => string
+			select: (matches: string[]) => Array<string>
+			emit: (selected: string[]) => string
+			check: (selected: string[]) => string
 			then: (result: string) => string
 		}
 		
@@ -43,17 +43,17 @@ const MotherTodeFrogasaurus = {}
 			translate(source) {
 				const matches = this.match(source)
 		
-				if (matches.length === 0) {
-					const error = this.throw(source)
-					if (error !== undefined) {
-						throw Error(error)
+				if (matches.length > 0) {
+					const selected = this.select(matches)
+					if (this.check(selected)) {
+						const result = this.emit(selected)
+						return this.then(result)
 					}
 				}
 		
-				const selected = this.select(...matches)
-				if (this.check(...selected)) {
-					const result = this.emit(...selected)
-					return this.then(result)
+				const error = this.throw(source)
+				if (error !== undefined) {
+					throw Error(error)
 				}
 			},
 		
@@ -69,17 +69,17 @@ const MotherTodeFrogasaurus = {}
 			},
 		
 			// What to pass to the check and emit functions
-			select(...matches) {
+			select(matches) {
 				return matches.flat(Infinity)
 			},
 		
 			// Additional check to perform after selecting
-			check(...selected) {
+			check(selected) {
 				return true
 			},
 		
 			// What to emit if the term matches
-			emit(...selected) {
+			emit(selected) {
 				return selected.join("")
 			},
 		
@@ -215,7 +215,7 @@ const MotherTodeFrogasaurus = {}
 		// OPERATORS //
 		//===========//
 		// Match terms in sequence
-		Term.list = (...terms) => ({
+		Term.list = (terms) => ({
 			...Term.default,
 			type: "list",
 		
@@ -240,14 +240,14 @@ const MotherTodeFrogasaurus = {}
 			},
 		
 			// Translate each match based on its term
-			select(...matches) {
+			select(matches) {
 				const selected = []
 		
 				for (let i = 0; i < terms.length; i++) {
 					const term = terms[i]
 					const match = matches[i]
-					const termSelected = term.select(...match)
-					const termEmitted = term.emit(...termSelected)
+					const termSelected = term.select(match)
+					const termEmitted = term.emit(termSelected)
 					selected.push(termEmitted)
 				}
 		
@@ -303,19 +303,19 @@ const MotherTodeFrogasaurus = {}
 			},
 		
 			// Translate each match
-			select(...matches) {
+			select(matches) {
 				const selected = []
 		
 				for (const match of matches) {
-					const termSelected = term.select(...match)
-					const termEmitted = term.emit(...termSelected)
+					const termSelected = term.select(match)
+					const termEmitted = term.emit(termSelected)
 					selected.push(termEmitted)
 				}
 		
 				return selected
 			},
 		
-			emit(...selected) {
+			emit(selected) {
 				return selected.join("")
 			},
 		
@@ -350,7 +350,7 @@ const MotherTodeFrogasaurus = {}
 			},
 		
 			// Translate each match
-			select(...matches) {
+			select(matches) {
 				if (matches.length === 1 && matches[0] === "") {
 					return []
 				}
@@ -358,15 +358,15 @@ const MotherTodeFrogasaurus = {}
 				const selected = []
 		
 				for (const match of matches) {
-					const termSelected = term.select(...match)
-					const termEmitted = term.emit(...termSelected)
+					const termSelected = term.select(match)
+					const termEmitted = term.emit(termSelected)
 					selected.push(termEmitted)
 				}
 		
 				return selected
 			},
 		
-			emit(...selected) {
+			emit(selected) {
 				return selected.join("")
 			},
 		
@@ -375,7 +375,7 @@ const MotherTodeFrogasaurus = {}
 			},
 		})
 		
-		Term.or = (...terms) => ({
+		Term.or = (terms) => ({
 			...Term.default,
 			type: "or",
 		
@@ -393,13 +393,13 @@ const MotherTodeFrogasaurus = {}
 				return []
 			},
 		
-			select(...matches) {
+			select(matches) {
 				const selected = []
 		
 				for (const match of matches) {
 					const term = match.term
-					const termSelected = term.select(...match)
-					const termEmitted = term.emit(...termSelected)
+					const termSelected = term.select(match)
+					const termEmitted = term.emit(termSelected)
 					selected.push(termEmitted)
 				}
 		
@@ -411,7 +411,7 @@ const MotherTodeFrogasaurus = {}
 			},
 		})
 		
-		Term.and = (...terms) => ({
+		Term.and = (terms) => ({
 			...Term.default,
 			type: "and",
 		
@@ -437,14 +437,14 @@ const MotherTodeFrogasaurus = {}
 				return result.term.throw(source)
 			},
 		
-			select(...matches) {
+			select(matches) {
 				const term = terms.at(-1)
-				return term.select(...matches)
+				return term.select(matches)
 			},
 		
-			emit(...selected) {
+			emit(selected) {
 				const term = terms.at(-1)
-				return term.emit(...selected)
+				return term.emit(selected)
 			},
 		
 			toString() {
