@@ -248,19 +248,23 @@ Deno.test("or", () => {
 	assertEquals(orTerm.translate("hi"), "hi")
 	assertThrows(() => orTerm.translate("yo"), Error, "Expected ('hello' | 'hi') but found 'yo'")
 
-	assertEquals(orTerm.match("hello")[0], ["hello"])
-	assertEquals(orTerm.match("hi")[0], ["hi"])
+	assertEquals(orTerm.match("hello")[0][0], "hello")
+	assertEquals(orTerm.match("hi")[0][0], "hi")
 	assertEquals(orTerm.match("yo").length, 0)
 
 	assertEquals(orTerm.test("hello"), true)
 	assertEquals(orTerm.test("hi"), true)
 	assertEquals(orTerm.test("yo"), false)
 
-	/*
 	const shoutTerm = Term.emit(Term.string("hello"), (hello) => hello + "!")
 	const orShoutTerm = Term.or(shoutTerm, Term.string("hi"))
 	assertEquals(orShoutTerm.translate("hello"), "hello!")
 	assertEquals(orShoutTerm.translate("hi"), "hi")
-	assertThrows(() => orShoutTerm.translate("yo"), Error, "Expected 'hello' or 'hi' but found 'yo'")
-	*/
+	assertThrows(() => orShoutTerm.translate("yo"), Error, "Expected ('hello' | 'hi') but found 'yo'")
+
+	const orTerm2 = Term.or(Term.string("hello"), Term.string("hi"), Term.string("yo"))
+	assertEquals(orTerm2.translate("hello"), "hello")
+	assertEquals(orTerm2.translate("hi"), "hi")
+	assertEquals(orTerm2.translate("yo"), "yo")
+	assertThrows(() => orTerm2.translate("wassup"), Error, "Expected ('hello' | 'hi' | 'yo') but found 'wassup'")
 })

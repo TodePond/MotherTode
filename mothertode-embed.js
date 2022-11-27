@@ -43,17 +43,17 @@ const MotherTodeFrogasaurus = {}
 			translate(source) {
 				const matches = this.match(source)
 		
-				if (matches.length > 0) {
-					const selected = this.select(...matches)
-					if (this.check(...selected)) {
-						const result = this.emit(...selected)
-						return this.then(result)
+				if (matches.length === 0) {
+					const error = this.throw(source)
+					if (error !== undefined) {
+						throw Error(error)
 					}
 				}
 		
-				const error = this.throw(source)
-				if (error !== undefined) {
-					throw Error(error)
+				const selected = this.select(...matches)
+				if (this.check(...selected)) {
+					const result = this.emit(...selected)
+					return this.then(result)
 				}
 			},
 		
@@ -259,7 +259,7 @@ const MotherTodeFrogasaurus = {}
 			},
 		
 			toString() {
-				return `${"("}terms.join(", ")${")"}`
+				return `${terms.join(", ")}`
 			},
 		})
 		
@@ -379,6 +379,7 @@ const MotherTodeFrogasaurus = {}
 			match(source) {
 				for (const term of terms) {
 					const match = term.match(source)
+					match.term = term
 					if (match.length > 0) {
 						const matches = [match]
 						matches.term = term
@@ -390,9 +391,16 @@ const MotherTodeFrogasaurus = {}
 			},
 		
 			select(...matches) {
-				const source = matches.join("")
-				const term = this.match(source).term
-				return term.select(...matches)
+				const selected = []
+		
+				for (const match of matches) {
+					const term = match.term
+					const termSelected = term.select(...match)
+					const termEmitted = term.emit(...termSelected)
+					selected.push(termEmitted)
+				}
+		
+				return selected
 			},
 		
 			toString() {
