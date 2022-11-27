@@ -64,6 +64,15 @@ This matches any word except for "ribbit".
 match /[a-zA-Z]/+ & !"ribbit"
 ```
 
+## Except
+
+Remove a term from an 'or' operation.\
+This matches "hello".
+
+```
+match ("hello" | "ribbit") - "ribbit"
+```
+
 ## Select
 
 You can **select** which terms to pass into the emit function with the `@` symbol.

@@ -32,7 +32,7 @@ match Number
 let Number = Add | Literal
 let Literal = /[0-9]/+
 let Add = {
-    match @(Number & !Add) "+" @Number
+    match @(Number - Add) "+" @Number
     emit (left, right) => left + right
 )
 ```

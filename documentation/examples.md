@@ -81,12 +81,12 @@ let Number = Add | Subtract | Literal
 let Literal = /[0-9]/+
 
 let Add = {
-    match @(Number & !Add) "+" @Number
+    match @(Number - Add) "+" @Number
     emit (left, right) => left + right
 }
 
 let Subtract = {
-    match @(Number & !Subtract) "-" @Number
+    match @(Number - Subtract) "-" @Number
     emit (left, right) => left - right
 }
 ```
@@ -100,7 +100,7 @@ let Add = Operation<"+", (a, b) => a + b>
 let Subtract = Operation<"-", (a, b) => a - b>
 
 let Operation = <operator, emitter> => {
-    match @(Number & !self) operator @Number
+    match @(Number - self) operator @Number
     emit (a, b) => emitter(a, b)
 }
 ```
