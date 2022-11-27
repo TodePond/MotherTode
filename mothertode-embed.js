@@ -93,7 +93,7 @@ const MotherTodeFrogasaurus = {}
 				if (source.length === 0) {
 					return `Expected ${this} but found end of input`
 				}
-				return `Expected ${this} but found '${source.slice(0, Term.ERROR_SNIPPET_LENGTH)}'`
+				return `Expected ${this} but found "${source.slice(0, Term.ERROR_SNIPPET_LENGTH)}"`
 			},
 		
 			toString() {
@@ -113,7 +113,7 @@ const MotherTodeFrogasaurus = {}
 			},
 		
 			toString() {
-				return `'${string}'`
+				return `"${string}"`
 			},
 		})
 		
@@ -232,7 +232,8 @@ const MotherTodeFrogasaurus = {}
 					}
 		
 					matches.push(match)
-					source = source.slice(match.join("").length)
+					const snippet = match.flat(Infinity).join("")
+					source = source.slice(snippet.length)
 				}
 		
 				return matches
@@ -294,7 +295,8 @@ const MotherTodeFrogasaurus = {}
 					}
 		
 					matches.push(match)
-					source = source.slice(match.join("").length)
+					const snippet = match.flat(Infinity).join("")
+					source = source.slice(snippet.length)
 				}
 		
 				return matches
@@ -337,7 +339,8 @@ const MotherTodeFrogasaurus = {}
 					}
 		
 					matches.push(match)
-					source = source.slice(match.join("").length)
+					const snippet = match.flat(Infinity).join("")
+					source = source.slice(snippet.length)
 				}
 		
 				if (matches.length === 0) {
@@ -405,6 +408,59 @@ const MotherTodeFrogasaurus = {}
 		
 			toString() {
 				return `${"("}${terms.join(" | ")}${")"}`
+			},
+		})
+		
+		Term.and = (...terms) => ({
+			...Term.default,
+			type: "and",
+		
+			match(source) {
+				let matches = []
+				let snippet = undefined
+		
+				for (const term of terms) {
+					const match = term.match(source)
+					if (match.length === 0) {
+						const result = []
+						result.term = term
+						result.type = "failure"
+						return result
+					}
+		
+					const termSnippet = match.flat(Infinity).join("")
+					if (snippet === undefined) {
+						snippet = termSnippet
+					} else if (snippet !== termSnippet) {
+						const result = []
+						result.term = term
+						result.type = "different"
+						return result
+					}
+		
+					matches = match
+				}
+		
+				return matches
+			},
+		
+			throw(source) {
+				const result = this.match(source)
+				return result.term.throw(source)
+			},
+		
+			select(...matches) {
+				const term = terms.at(-1)
+				return term.select(...matches)
+			},
+		
+			emit(...selected) {
+				const term = terms.at(-1)
+				return term.emit(...selected)
+			},
+		
+			toString() {
+				return `${"("}${terms.join(" & ")}${")"}`
 			},
 		})
 		

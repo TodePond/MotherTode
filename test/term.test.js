@@ -8,7 +8,7 @@ Deno.test("string", () => {
 	const helloTerm = Term.string("hello")
 
 	assertEquals(helloTerm.translate("hello"), "hello")
-	assertThrows(() => helloTerm.translate("hi"), Error, "Expected 'hello' but found 'hi'")
+	assertThrows(() => helloTerm.translate("hi"), Error, 'Expected "hello" but found "hi"')
 
 	assertEquals(helloTerm.match("hello"), ["hello"])
 	assertEquals(helloTerm.match("hi"), [])
@@ -21,7 +21,7 @@ Deno.test("regular expression", () => {
 	const helloTerm = Term.regExp(/hello/)
 
 	assertEquals(helloTerm.translate("hello"), "hello")
-	assertThrows(() => helloTerm.translate("hi"), Error, "Expected /hello/ but found 'hi'")
+	assertThrows(() => helloTerm.translate("hi"), Error, 'Expected /hello/ but found "hi"')
 
 	assertEquals(helloTerm.match("hello"), ["hello"])
 	assertEquals(helloTerm.match("hi"), [])
@@ -79,7 +79,7 @@ Deno.test("end", () => {
 	const endTerm = Term.end
 
 	assertEquals(endTerm.translate(""), "")
-	assertThrows(() => endTerm.translate("hello"), Error, "Expected end of input but found 'hello'")
+	assertThrows(() => endTerm.translate("hello"), Error, 'Expected end of input but found "hello"')
 
 	assertEquals(endTerm.match(""), [""])
 	assertEquals(endTerm.match("hello"), [])
@@ -108,9 +108,9 @@ Deno.test("list", () => {
 	const listTerm = Term.list(Term.string("hello"), Term.string("hi"))
 
 	assertEquals(listTerm.translate("hellohi"), "hellohi")
-	assertThrows(() => listTerm.translate("helloh"), Error, "Expected 'hi' but found 'h'")
-	assertThrows(() => listTerm.translate("hello"), Error, "Expected 'hi' but found end of input")
-	assertThrows(() => listTerm.translate(""), Error, "Expected 'hello' but found end of input")
+	assertThrows(() => listTerm.translate("helloh"), Error, 'Expected "hi" but found "h"')
+	assertThrows(() => listTerm.translate("hello"), Error, 'Expected "hi" but found end of input')
+	assertThrows(() => listTerm.translate(""), Error, 'Expected "hello" but found end of input')
 
 	assertEquals(listTerm.match("hellohi"), [["hello"], ["hi"]])
 	assertEquals(listTerm.match("helloh").length, 0)
@@ -120,21 +120,21 @@ Deno.test("list", () => {
 
 	const customTerm = Term.emit(listTerm, (hello, hi) => `${hello} ${hi}`)
 	assertEquals(customTerm.translate("hellohi"), "hello hi")
-	assertThrows(() => customTerm.translate("helloh"), Error, "Expected 'hi' but found 'h'")
+	assertThrows(() => customTerm.translate("helloh"), Error, 'Expected "hi" but found "h"')
 
 	const shoutTerm = Term.emit(Term.string("hello"), (hello) => hello + "!")
 	const listShoutTerm = Term.list(shoutTerm, shoutTerm)
 	assertEquals(listShoutTerm.translate("hellohello"), "hello!hello!")
-	assertThrows(() => listShoutTerm.translate("hello"), Error, "Expected 'hello' but found end of input")
+	assertThrows(() => listShoutTerm.translate("hello"), Error, 'Expected "hello" but found end of input')
 })
 
 Deno.test("list - nested", () => {
 	const listTerm = Term.list(Term.string("hello"), Term.list(Term.string("hi"), Term.string("yo")))
 
 	assertEquals(listTerm.translate("hellohiyo"), "hellohiyo")
-	assertThrows(() => listTerm.translate("hellohi"), Error, "Expected 'yo' but found end of input")
-	assertThrows(() => listTerm.translate("hello"), Error, "Expected 'hi' but found end of input")
-	assertThrows(() => listTerm.translate(""), Error, "Expected 'hello' but found end of input")
+	assertThrows(() => listTerm.translate("hellohi"), Error, 'Expected "yo" but found end of input')
+	assertThrows(() => listTerm.translate("hello"), Error, 'Expected "hi" but found end of input')
+	assertThrows(() => listTerm.translate(""), Error, 'Expected "hello" but found end of input')
 
 	assertEquals(listTerm.match("hellohiyo"), [["hello"], [["hi"], ["yo"]]])
 	assertEquals(listTerm.match("hellohi").length, 0)
@@ -149,10 +149,10 @@ Deno.test("list - nested", () => {
 	)
 
 	assertEquals(listTerm2.translate("hellohiyohi"), "hellohiyohi")
-	assertThrows(() => listTerm2.translate("hellohiyo"), Error, "Expected 'hi' but found end of input")
-	assertThrows(() => listTerm2.translate("hellohi"), Error, "Expected 'yo' but found end of input")
-	assertThrows(() => listTerm2.translate("hello"), Error, "Expected 'hi' but found end of input")
-	assertThrows(() => listTerm2.translate(""), Error, "Expected 'hello' but found end of input")
+	assertThrows(() => listTerm2.translate("hellohiyo"), Error, 'Expected "hi" but found end of input')
+	assertThrows(() => listTerm2.translate("hellohi"), Error, 'Expected "yo" but found end of input')
+	assertThrows(() => listTerm2.translate("hello"), Error, 'Expected "hi" but found end of input')
+	assertThrows(() => listTerm2.translate(""), Error, 'Expected "hello" but found end of input')
 
 	assertEquals(listTerm2.match("hellohiyohi"), [["hello"], [["hi"], ["yo"]], ["hi"]])
 	assertEquals(listTerm2.match("hellohiyo").length, 0)
@@ -163,13 +163,13 @@ Deno.test("list - nested", () => {
 	const customTerm = Term.emit(listTerm, (hello, hiyo) => `${hello} ${hiyo}`)
 	assertEquals(customTerm.translate("hellohiyo"), "hello hiyo")
 	assertEquals(customTerm.match("hellohiyo"), [["hello"], [["hi"], ["yo"]]])
-	assertThrows(() => customTerm.translate("hellohi"), Error, "Expected 'yo' but found end of input")
+	assertThrows(() => customTerm.translate("hellohi"), Error, 'Expected "yo" but found end of input')
 
 	const shoutTerm = Term.emit(Term.string("hello"), (hello) => hello + "!")
 	const listShoutTerm = Term.list(shoutTerm, Term.list(shoutTerm, shoutTerm))
 	assertEquals(listShoutTerm.translate("hellohellohello"), "hello!hello!hello!")
 	assertEquals(listShoutTerm.match("hellohellohello"), [["hello"], [["hello"], ["hello"]]])
-	assertThrows(() => listShoutTerm.translate("hellohello"), Error, "Expected 'hello' but found end of input")
+	assertThrows(() => listShoutTerm.translate("hellohello"), Error, 'Expected "hello" but found end of input')
 })
 
 Deno.test("maybe", () => {
@@ -202,7 +202,7 @@ Deno.test("many", () => {
 
 	assertEquals(manyTerm.translate("hello"), "hello")
 	assertEquals(manyTerm.translate("hellohello"), "hellohello")
-	assertThrows(() => manyTerm.translate(""), Error, "Expected 'hello'+ but found end of input")
+	assertThrows(() => manyTerm.translate(""), Error, 'Expected "hello"+ but found end of input')
 
 	assertEquals(manyTerm.match("hello"), [["hello"]])
 	assertEquals(manyTerm.match("hellohello"), [["hello"], ["hello"]])
@@ -246,7 +246,7 @@ Deno.test("or", () => {
 
 	assertEquals(orTerm.translate("hello"), "hello")
 	assertEquals(orTerm.translate("hi"), "hi")
-	assertThrows(() => orTerm.translate("yo"), Error, "Expected ('hello' | 'hi') but found 'yo'")
+	assertThrows(() => orTerm.translate("yo"), Error, 'Expected ("hello" | "hi") but found "yo"')
 
 	assertEquals(orTerm.match("hello")[0][0], "hello")
 	assertEquals(orTerm.match("hi")[0][0], "hi")
@@ -260,11 +260,28 @@ Deno.test("or", () => {
 	const orShoutTerm = Term.or(shoutTerm, Term.string("hi"))
 	assertEquals(orShoutTerm.translate("hello"), "hello!")
 	assertEquals(orShoutTerm.translate("hi"), "hi")
-	assertThrows(() => orShoutTerm.translate("yo"), Error, "Expected ('hello' | 'hi') but found 'yo'")
+	assertThrows(() => orShoutTerm.translate("yo"), Error, 'Expected ("hello" | "hi") but found "yo"')
 
 	const orTerm2 = Term.or(Term.string("hello"), Term.string("hi"), Term.string("yo"))
 	assertEquals(orTerm2.translate("hello"), "hello")
 	assertEquals(orTerm2.translate("hi"), "hi")
 	assertEquals(orTerm2.translate("yo"), "yo")
-	assertThrows(() => orTerm2.translate("wassup"), Error, "Expected ('hello' | 'hi' | 'yo') but found 'wassup'")
+	assertThrows(() => orTerm2.translate("wassup"), Error, 'Expected ("hello" | "hi" | "yo") but found "wassup"')
+})
+
+Deno.test("and", () => {
+	const andTerm = Term.and(Term.string("hello"), Term.regExp(/hello/))
+
+	assertEquals(andTerm.translate("hello"), "hello")
+	assertThrows(() => andTerm.translate("hi"), Error, 'Expected "hello" but found "hi"')
+
+	assertEquals(andTerm.match("hello"), ["hello"])
+	assertEquals(andTerm.match("hi").length, 0)
+
+	const andTerm2 = Term.and(Term.regExp(/[yo]+/), Term.string("yo"))
+	assertEquals(andTerm2.translate("yo"), "yo")
+	assertThrows(() => andTerm2.translate("yoyo"), Error, 'Expected "yo" but found "yoyo"')
+
+	assertEquals(andTerm2.match("yo"), ["yo"])
+	assertEquals(andTerm2.match("yoyo").length, 0)
 })
