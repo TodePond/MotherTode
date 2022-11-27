@@ -90,8 +90,14 @@ const MotherTodeFrogasaurus = {}
 		
 			// Error message to throw if the term does not match
 			throw(source) {
-				const snippet = source.slice(0, Term.ERROR_SNIPPET_LENGTH)
-				return `Expected '${this.type}' term but found '${snippet}'`
+				if (source.length === 0) {
+					return `Expected ${this} but found end of input`
+				}
+				return `Expected ${this} but found '${source.slice(0, Term.ERROR_SNIPPET_LENGTH)}'`
+			},
+		
+			toString() {
+				return `${this.type} term`
 			},
 		}
 		
@@ -106,12 +112,8 @@ const MotherTodeFrogasaurus = {}
 				return source.startsWith(string) ? [string] : []
 			},
 		
-			throw(source) {
-				if (source.length === 0) {
-					return `Expected '${string}' but found end of input`
-				}
-				const snippet = source.slice(0, string.length)
-				return `Expected '${string}' but found '${snippet}'`
+			toString() {
+				return `'${string}'`
 			},
 		})
 		
@@ -124,13 +126,8 @@ const MotherTodeFrogasaurus = {}
 				return matches === null ? [] : [...matches]
 			},
 		
-			throw(source) {
-				if (source.length === 0) {
-					return `Expected ${regExp} term but found end of input`
-				}
-		
-				const snippet = source.slice(0, Term.ERROR_SNIPPET_LENGTH)
-				return `Expected ${regExp} but found '${snippet}'`
+			toString() {
+				return `${regExp}`
 			},
 		})
 		
@@ -150,8 +147,8 @@ const MotherTodeFrogasaurus = {}
 				return source.length > 0 ? [source[0]] : []
 			},
 		
-			throw(source) {
-				return `Expected any character but found end of input`
+			toString() {
+				return "any character"
 			},
 		}
 		
@@ -163,9 +160,8 @@ const MotherTodeFrogasaurus = {}
 				return source.length === 0 ? [""] : []
 			},
 		
-			throw(source) {
-				const snippet = source.slice(0, Term.ERROR_SNIPPET_LENGTH)
-				return `Expected end of input but found '${snippet}'`
+			toString() {
+				return "end of input"
 			},
 		}
 		
@@ -175,6 +171,10 @@ const MotherTodeFrogasaurus = {}
 		
 			match(source) {
 				return [""]
+			},
+		
+			toString() {
+				return "nothing"
 			},
 		}
 		
@@ -215,7 +215,7 @@ const MotherTodeFrogasaurus = {}
 		// OPERATORS //
 		//===========//
 		// Match terms in sequence
-		Term.list = (terms) => ({
+		Term.list = (...terms) => ({
 			...Term.default,
 			type: "list",
 		
@@ -226,7 +226,7 @@ const MotherTodeFrogasaurus = {}
 					const match = term.match(source)
 					if (match.length === 0) {
 						const result = []
-						result.progress = matches.length
+						result.term = term
 						result.source = source
 						return result
 					}
@@ -255,8 +255,11 @@ const MotherTodeFrogasaurus = {}
 		
 			throw(source) {
 				const result = this.match(source)
-				const term = terms[result.progress]
-				return term.throw(result.source)
+				return result.term.throw(result.source)
+			},
+		
+			toString() {
+				return `${"("}terms.join(", ")${")"}`
 			},
 		})
 		
@@ -270,6 +273,10 @@ const MotherTodeFrogasaurus = {}
 					return [""]
 				}
 				return matches
+			},
+		
+			toString() {
+				return `[${term}]`
 			},
 		})
 		
@@ -308,6 +315,10 @@ const MotherTodeFrogasaurus = {}
 		
 			emit(...selected) {
 				return selected.join("")
+			},
+		
+			toString() {
+				return `${term}+`
 			},
 		})
 		
@@ -354,6 +365,38 @@ const MotherTodeFrogasaurus = {}
 		
 			emit(...selected) {
 				return selected.join("")
+			},
+		
+			toString() {
+				return `{${term}}`
+			},
+		})
+		
+		Term.or = (...terms) => ({
+			...Term.default,
+			type: "or",
+		
+			match(source) {
+				for (const term of terms) {
+					const match = term.match(source)
+					if (match.length > 0) {
+						const matches = [match]
+						matches.term = term
+						return matches
+					}
+				}
+		
+				return []
+			},
+		
+			select(...matches) {
+				const source = matches.join("")
+				const term = this.match(source).term
+				return term.select(...matches)
+			},
+		
+			toString() {
+				return `${"("}${terms.join(" | ")}${")"}`
 			},
 		})
 		

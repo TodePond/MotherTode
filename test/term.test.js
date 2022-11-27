@@ -105,7 +105,7 @@ Deno.test("nothing", () => {
 // OPERATORS //
 //===========//
 Deno.test("list", () => {
-	const listTerm = Term.list([Term.string("hello"), Term.string("hi")])
+	const listTerm = Term.list(Term.string("hello"), Term.string("hi"))
 
 	assertEquals(listTerm.translate("hellohi"), "hellohi")
 	assertThrows(() => listTerm.translate("helloh"), Error, "Expected 'hi' but found 'h'")
@@ -123,13 +123,13 @@ Deno.test("list", () => {
 	assertThrows(() => customTerm.translate("helloh"), Error, "Expected 'hi' but found 'h'")
 
 	const shoutTerm = Term.emit(Term.string("hello"), (hello) => hello + "!")
-	const listShoutTerm = Term.list([shoutTerm, shoutTerm])
+	const listShoutTerm = Term.list(shoutTerm, shoutTerm)
 	assertEquals(listShoutTerm.translate("hellohello"), "hello!hello!")
 	assertThrows(() => listShoutTerm.translate("hello"), Error, "Expected 'hello' but found end of input")
 })
 
 Deno.test("list - nested", () => {
-	const listTerm = Term.list([Term.string("hello"), Term.list([Term.string("hi"), Term.string("yo")])])
+	const listTerm = Term.list(Term.string("hello"), Term.list(Term.string("hi"), Term.string("yo")))
 
 	assertEquals(listTerm.translate("hellohiyo"), "hellohiyo")
 	assertThrows(() => listTerm.translate("hellohi"), Error, "Expected 'yo' but found end of input")
@@ -142,11 +142,11 @@ Deno.test("list - nested", () => {
 	assertEquals(listTerm.test("hellohiyo"), true)
 	assertEquals(listTerm.test("hellohi"), false)
 
-	const listTerm2 = Term.list([
+	const listTerm2 = Term.list(
 		Term.string("hello"),
-		Term.list([Term.string("hi"), Term.string("yo")]),
+		Term.list(Term.string("hi"), Term.string("yo")),
 		Term.string("hi"),
-	])
+	)
 
 	assertEquals(listTerm2.translate("hellohiyohi"), "hellohiyohi")
 	assertThrows(() => listTerm2.translate("hellohiyo"), Error, "Expected 'hi' but found end of input")
@@ -166,7 +166,7 @@ Deno.test("list - nested", () => {
 	assertThrows(() => customTerm.translate("hellohi"), Error, "Expected 'yo' but found end of input")
 
 	const shoutTerm = Term.emit(Term.string("hello"), (hello) => hello + "!")
-	const listShoutTerm = Term.list([shoutTerm, Term.list([shoutTerm, shoutTerm])])
+	const listShoutTerm = Term.list(shoutTerm, Term.list(shoutTerm, shoutTerm))
 	assertEquals(listShoutTerm.translate("hellohellohello"), "hello!hello!hello!")
 	assertEquals(listShoutTerm.match("hellohellohello"), [["hello"], [["hello"], ["hello"]]])
 	assertThrows(() => listShoutTerm.translate("hellohello"), Error, "Expected 'hello' but found end of input")
@@ -202,7 +202,7 @@ Deno.test("many", () => {
 
 	assertEquals(manyTerm.translate("hello"), "hello")
 	assertEquals(manyTerm.translate("hellohello"), "hellohello")
-	assertThrows(() => manyTerm.translate(""), Error, "Expected 'hello' but found end of input")
+	assertThrows(() => manyTerm.translate(""), Error, "Expected 'hello'+ but found end of input")
 
 	assertEquals(manyTerm.match("hello"), [["hello"]])
 	assertEquals(manyTerm.match("hellohello"), [["hello"], ["hello"]])
@@ -239,4 +239,28 @@ Deno.test("any", () => {
 	assertEquals(anyShoutTerm.translate("hello"), "hello!")
 	assertEquals(anyShoutTerm.translate("hellohello"), "hello!hello!")
 	assertEquals(anyShoutTerm.translate(""), "")
+})
+
+Deno.test("or", () => {
+	const orTerm = Term.or(Term.string("hello"), Term.string("hi"))
+
+	assertEquals(orTerm.translate("hello"), "hello")
+	assertEquals(orTerm.translate("hi"), "hi")
+	assertThrows(() => orTerm.translate("yo"), Error, "Expected ('hello' | 'hi') but found 'yo'")
+
+	assertEquals(orTerm.match("hello")[0], ["hello"])
+	assertEquals(orTerm.match("hi")[0], ["hi"])
+	assertEquals(orTerm.match("yo").length, 0)
+
+	assertEquals(orTerm.test("hello"), true)
+	assertEquals(orTerm.test("hi"), true)
+	assertEquals(orTerm.test("yo"), false)
+
+	/*
+	const shoutTerm = Term.emit(Term.string("hello"), (hello) => hello + "!")
+	const orShoutTerm = Term.or(shoutTerm, Term.string("hi"))
+	assertEquals(orShoutTerm.translate("hello"), "hello!")
+	assertEquals(orShoutTerm.translate("hi"), "hi")
+	assertThrows(() => orShoutTerm.translate("yo"), Error, "Expected 'hello' or 'hi' but found 'yo'")
+	*/
 })
