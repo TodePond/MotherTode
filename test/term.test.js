@@ -302,3 +302,24 @@ Deno.test("not", () => {
 	assertEquals(notTerm2.match("hi"), ["hi"])
 	assertEquals(notTerm2.match("hello").length, 0)
 })
+
+Deno.test("or - except", () => {
+	const helloTerm = Term.string("hello")
+	const hiTerm = Term.string("hi")
+	const orTerm = Term.or([helloTerm, hiTerm])
+
+	assertEquals(orTerm.translate("hi", { exceptions: [helloTerm] }), "hi")
+	assertThrows(
+		() => orTerm.translate("hello", { exceptions: [helloTerm] }),
+		Error,
+		'Expected ("hi") but found "hello"',
+	)
+
+	assertEquals(orTerm.match("hi", { exceptions: [helloTerm] })[0][0], "hi")
+	assertEquals(orTerm.match("hello", { exceptions: [helloTerm] }).length, 0)
+
+	//const literalTerm = Term.regExp(/[0-9]+/)
+	//const addTerm = Term.list([Term.options(numberTerm, { exceptions: [numberTerm] }), Term.string("+"), numberTerm])
+	//const numberTerm = Term.or([addTerm, literalTerm])
+	//assertEquals(numberTerm.translate("1+2"), "1+2")
+})
