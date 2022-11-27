@@ -181,6 +181,21 @@ const MotherTodeFrogasaurus = {}
 		//==========//
 		// OVERRIDE //
 		//==========//
+		Term.throw = (term, throw_) => ({
+			...term,
+			throw: throw_,
+		})
+		
+		Term.match = (term, match) => ({
+			...term,
+			match,
+		})
+		
+		Term.select = (term, select) => ({
+			...term,
+			select,
+		})
+		
 		Term.emit = (term, emit) => ({
 			...term,
 			emit,
@@ -189,6 +204,11 @@ const MotherTodeFrogasaurus = {}
 		Term.check = (term, check) => ({
 			...term,
 			check,
+		})
+		
+		Term.then = (term, then) => ({
+			...term,
+			then,
 		})
 		
 		//===========//
