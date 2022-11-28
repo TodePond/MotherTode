@@ -317,13 +317,22 @@ Deno.test("or - except", () => {
 
 	assertEquals(orTerm.match("hi", { exceptions: [helloTerm] })[0][0], "hi")
 	assertEquals(orTerm.match("hello", { exceptions: [helloTerm] }).length, 0)
+})
 
-	const numberTerm = Term.or([Term.term("addTerm"), Term.term("literalTerm")])
-	Term.literalTerm = Term.regExp(/[0-9]+/)
-	Term.addTerm = Term.list([
-		Term.options(numberTerm, { exceptions: [Term.term("addTerm")] }),
-		Term.string("+"),
-		numberTerm,
-	])
-	assertEquals(numberTerm.translate("1+2"), "1+2")
+Deno.test("declare", () => {
+	const [numberTerm] = Term.declare((number, literal, add) => {
+		const _literal = Term.regExp(/[0-9]+/)
+		const _number = Term.or([add, literal])
+		const _add = Term.emit(
+			Term.list([Term.except(number, [add]), Term.string("+"), number]),
+			([a, _, b]) => parseInt(a) + parseInt(b),
+		)
+		return [_number, _literal, _add]
+	})
+
+	assertEquals(numberTerm.translate("1"), "1")
+	assertEquals(numberTerm.translate("1+2"), "3")
+	assertEquals(numberTerm.translate("1+2+3"), "6")
+	assertEquals(numberTerm.translate("1+2+3+4"), "10")
+	assertEquals(numberTerm.translate("1+2+3+4+5"), "15")
 })

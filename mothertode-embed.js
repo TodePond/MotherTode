@@ -105,7 +105,7 @@ const MotherTodeFrogasaurus = {}
 		// PROXY //
 		//=======//
 		Term.proxy = (term, proxy) => ({
-			...Term.default,
+			...term,
 			type: "proxy",
 		
 			translate(source, options = {}) {
@@ -154,6 +154,8 @@ const MotherTodeFrogasaurus = {}
 			})
 		}
 		
+		Term.except = (term, exceptions) => Term.options(term, { exceptions })
+		
 		//============//
 		// PRIMITIVES //
 		//============//
@@ -183,19 +185,6 @@ const MotherTodeFrogasaurus = {}
 				return `${regExp}`
 			},
 		})
-		
-		//======//
-		// TERM //
-		//======//
-		Term.term = (name) => {
-			return Term.proxy(Term.default, (methodName, arg, options) => {
-				const term = Term[name]
-				if (term === undefined) {
-					throw Error(`Couldn't find term named "${name}"`)
-				}
-				return term[methodName](arg, options)
-			})
-		}
 		
 		//===========//
 		// BUILT-INS //
@@ -542,6 +531,25 @@ const MotherTodeFrogasaurus = {}
 				return `!${term}`
 			},
 		})
+		
+		//=======//
+		// SCOPE //
+		//=======//
+		Term.declare = (declaration) => {
+			const terms = []
+			const proxies = []
+			for (let i = 0; i < declaration.length; i++) {
+				const proxy = Term.proxy(Term.default, (method, arg, options) => {
+					return terms[i][method](arg, options)
+				})
+				proxies.push(proxy)
+			}
+			const declared = declaration(...proxies)
+			for (let i = 0; i < declared.length; i++) {
+				terms[i] = declared[i]
+			}
+			return terms
+		}
 		
 
 		MotherTodeFrogasaurus["./term/term.js"].Term = Term

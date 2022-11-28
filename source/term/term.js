@@ -93,7 +93,7 @@ Term.default = {
 // PROXY //
 //=======//
 Term.proxy = (term, proxy) => ({
-	...Term.default,
+	...term,
 	type: "proxy",
 
 	translate(source, options = {}) {
@@ -142,6 +142,8 @@ Term.options = (term, defaultOptions) => {
 	})
 }
 
+Term.except = (term, exceptions) => Term.options(term, { exceptions })
+
 //============//
 // PRIMITIVES //
 //============//
@@ -171,19 +173,6 @@ Term.regExp = (regExp) => ({
 		return `${regExp}`
 	},
 })
-
-//======//
-// TERM //
-//======//
-Term.term = (name) => {
-	return Term.proxy(Term.default, (methodName, arg, options) => {
-		const term = Term[name]
-		if (term === undefined) {
-			throw Error(`Couldn't find term named "${name}"`)
-		}
-		return term[methodName](arg, options)
-	})
-}
 
 //===========//
 // BUILT-INS //
@@ -530,3 +519,22 @@ Term.not = (term) => ({
 		return `!${term}`
 	},
 })
+
+//=======//
+// SCOPE //
+//=======//
+Term.declare = (declaration) => {
+	const terms = []
+	const proxies = []
+	for (let i = 0; i < declaration.length; i++) {
+		const proxy = Term.proxy(Term.default, (method, arg, options) => {
+			return terms[i][method](arg, options)
+		})
+		proxies.push(proxy)
+	}
+	const declared = declaration(...proxies)
+	for (let i = 0; i < declared.length; i++) {
+		terms[i] = declared[i]
+	}
+	return terms
+}
