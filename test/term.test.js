@@ -318,8 +318,12 @@ Deno.test("or - except", () => {
 	assertEquals(orTerm.match("hi", { exceptions: [helloTerm] })[0][0], "hi")
 	assertEquals(orTerm.match("hello", { exceptions: [helloTerm] }).length, 0)
 
-	//const literalTerm = Term.regExp(/[0-9]+/)
-	//const addTerm = Term.list([Term.options(numberTerm, { exceptions: [numberTerm] }), Term.string("+"), numberTerm])
-	//const numberTerm = Term.or([addTerm, literalTerm])
-	//assertEquals(numberTerm.translate("1+2"), "1+2")
+	const numberTerm = Term.or([Term.term("addTerm"), Term.term("literalTerm")])
+	Term.literalTerm = Term.regExp(/[0-9]+/)
+	Term.addTerm = Term.list([
+		Term.options(numberTerm, { exceptions: [Term.term("addTerm")] }),
+		Term.string("+"),
+		numberTerm,
+	])
+	assertEquals(numberTerm.translate("1+2"), "1+2")
 })
