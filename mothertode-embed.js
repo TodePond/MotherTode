@@ -101,49 +101,58 @@ const MotherTodeFrogasaurus = {}
 			},
 		}
 		
-		//=========//
-		// OPTIONS //
-		//=========//
-		Term.options = (term, defaultOptions) => ({
+		//=======//
+		// PROXY //
+		//=======//
+		Term.proxy = (term, proxy) => ({
 			...Term.default,
-			type: "options",
+			type: "proxy",
 		
 			translate(source, options = {}) {
-				return term.translate(source, { ...defaultOptions, ...options })
+				return proxy("translate", source, options)
 			},
 		
 			test(source, options = {}) {
-				return term.test(source, { ...defaultOptions, ...options })
+				return proxy("test", source, options)
 			},
 		
 			match(source, options = {}) {
-				return term.match(source, { ...defaultOptions, ...options })
+				return proxy("match", source, options)
 			},
 		
 			select(matches, options = {}) {
-				return term.select(matches, { ...defaultOptions, ...options })
+				return proxy("select", matches, options)
 			},
 		
 			emit(selected, options = {}) {
-				return term.emit(selected, { ...defaultOptions, ...options })
+				return proxy("emit", selected, options)
 			},
 		
 			check(selected, options = {}) {
-				return term.check(selected, { ...defaultOptions, ...options })
+				return proxy("check", selected, options)
 			},
 		
 			then(result, options = {}) {
-				return term.then(result, { ...defaultOptions, ...options })
+				return proxy("then", result, options)
 			},
 		
 			throw(source, options = {}) {
-				return term.throw(source, { ...defaultOptions, ...options })
+				return proxy("throw", source, options)
 			},
 		
 			toString(options = {}) {
-				return term.toString({ ...defaultOptions, ...options })
+				return proxy("toString", undefined, options)
 			},
 		})
+		
+		//=========//
+		// OPTIONS //
+		//=========//
+		Term.options = (term, defaultOptions) => {
+			return Term.proxy(term, (methodName, arg, options) => {
+				return term[methodName](arg, { ...defaultOptions, ...options })
+			})
+		}
 		
 		//============//
 		// PRIMITIVES //
@@ -174,6 +183,19 @@ const MotherTodeFrogasaurus = {}
 				return `${regExp}`
 			},
 		})
+		
+		//======//
+		// TERM //
+		//======//
+		Term.term = (name) => {
+			return Term.proxy(Term.default, (methodName, arg, options) => {
+				const term = Term[name]
+				if (term === undefined) {
+					throw Error(`Couldn't find term named "${name}"`)
+				}
+				return term[methodName](arg, options)
+			})
+		}
 		
 		//===========//
 		// BUILT-INS //
