@@ -320,19 +320,19 @@ Deno.test("or - except", () => {
 })
 
 Deno.test("declare", () => {
-	const [numberTerm] = Term.declare((number, literal, add) => {
+	const { number } = Term.declare(({ number, literal, add }) => {
 		const _literal = Term.regExp(/[0-9]+/)
 		const _number = Term.or([add, literal])
 		const _add = Term.emit(
 			Term.list([Term.except(number, [add]), Term.string("+"), number]),
 			([a, _, b]) => parseInt(a) + parseInt(b),
 		)
-		return [_number, _literal, _add]
+		return { number: _number, literal: _literal, add: _add }
 	})
 
-	assertEquals(numberTerm.translate("1"), "1")
-	assertEquals(numberTerm.translate("1+2"), "3")
-	assertEquals(numberTerm.translate("1+2+3"), "6")
-	assertEquals(numberTerm.translate("1+2+3+4"), "10")
-	assertEquals(numberTerm.translate("1+2+3+4+5"), "15")
+	assertEquals(number.translate("1"), "1")
+	assertEquals(number.translate("1+2"), "3")
+	assertEquals(number.translate("1+2+3"), "6")
+	assertEquals(number.translate("1+2+3+4"), "10")
+	assertEquals(number.translate("1+2+3+4+5"), "15")
 })

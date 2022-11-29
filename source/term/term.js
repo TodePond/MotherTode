@@ -524,17 +524,18 @@ Term.not = (term) => ({
 // SCOPE //
 //=======//
 Term.declare = (declaration) => {
-	const terms = []
-	const proxies = []
-	for (let i = 0; i < declaration.length; i++) {
-		const proxy = Term.proxy(Term.default, (method, arg, options) => {
-			return terms[i][method](arg, options)
-		})
-		proxies.push(proxy)
-	}
-	const declared = declaration(...proxies)
-	for (let i = 0; i < declared.length; i++) {
-		terms[i] = declared[i]
+	const terms = {}
+	const proxies /* what */ = new Proxy(terms, {
+		get(target, key) {
+			return Term.proxy(Term.default, (method, arg, options) => {
+				return target[key][method](arg, options)
+			})
+		},
+	})
+
+	const declared = declaration(proxies)
+	for (const key in declared) {
+		terms[key] = declared[key]
 	}
 	return terms
 }
