@@ -359,3 +359,26 @@ Deno.test("hoist - except", () => {
 	assertEquals(except.translate("hi"), "hi")
 	assertThrows(() => except.translate("hello"), Error, 'Expected ("hi") but found "hello"')
 })
+
+Deno.test("list - maybe", () => {
+	const helloTerm = Term.string("hello")
+	const hiTerm = Term.string("hi")
+	const maybeTerm = Term.maybe(Term.list([hiTerm, hiTerm]))
+
+	const listTerm = Term.list([helloTerm, maybeTerm])
+
+	assertEquals(listTerm.translate("hello"), "hello")
+})
+
+/*
+Deno.test("hoist - recursive", () => {
+	const { list, hello } = Term.hoist(({ list, hello }) => {
+		return {
+			list: Term.list([hello, Term.maybe(list)]),
+			hello: Term.string("hello"),
+		}
+	})
+
+	assertEquals(list.translate("hellohello"), "hellohello")
+})
+*/

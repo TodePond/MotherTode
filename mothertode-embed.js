@@ -333,6 +333,14 @@ const MotherTodeFrogasaurus = {}
 				return matches
 			},
 		
+			select(matches, options = {}) {
+				const [match] = matches
+				if (match === "") {
+					return [""]
+				}
+				return term.select(matches, options)
+			},
+		
 			toString(options = {}) {
 				return `[${term.toString(options)}]`
 			},
