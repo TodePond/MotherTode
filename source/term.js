@@ -523,19 +523,26 @@ Term.not = (term) => ({
 //=======//
 // SCOPE //
 //=======//
-Term.declare = (declaration) => {
+Term.declare = (declare) => {
 	const terms = {}
-	const proxies /* what */ = new Proxy(terms, {
+	const proxiesCache = new Map()
+	const proxies = new Proxy(terms, {
 		get(target, key) {
-			return Term.proxy(Term.default, (method, arg, options) => {
+			if (proxiesCache.has(key)) {
+				return proxiesCache.get(key)
+			}
+			const proxy = Term.proxy(Term.default, (method, arg, options) => {
 				return target[key][method](arg, options)
 			})
+			proxiesCache.set(key, proxy)
+			return proxy
 		},
 	})
 
-	const declared = declaration(proxies)
+	const declared = declare(proxies)
 	for (const key in declared) {
 		terms[key] = declared[key]
 	}
+
 	return terms
 }
