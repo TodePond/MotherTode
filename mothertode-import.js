@@ -7,9 +7,9 @@ const MotherTodeFrogasaurus = {}
 // SOURCE //
 //========//
 {
-	//====== ./term/term.js ======
+	//====== ./term.js ======
 	{
-		MotherTodeFrogasaurus["./term/term.js"] = {}
+		MotherTodeFrogasaurus["./term.js"] = {}
 		/*
 		
 		type Tree<T> = [T] | Array<Tree<T>>
@@ -553,7 +553,7 @@ const MotherTodeFrogasaurus = {}
 		}
 		
 
-		MotherTodeFrogasaurus["./term/term.js"].Term = Term
+		MotherTodeFrogasaurus["./term.js"].Term = Term
 	}
 
 
@@ -563,8 +563,8 @@ const MotherTodeFrogasaurus = {}
 //=========//
 // EXPORTS //
 //=========//
-export const Term = MotherTodeFrogasaurus["./term/term.js"].Term
+export const Term = MotherTodeFrogasaurus["./term.js"].Term
 
 export const MotherTode = {
-	Term: MotherTodeFrogasaurus["./term/term.js"].Term,
+	Term: MotherTodeFrogasaurus["./term.js"].Term,
 }
