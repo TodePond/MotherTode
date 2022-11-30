@@ -24,7 +24,8 @@ export const Term = {}
 Term.ERROR_SNIPPET_LENGTH = 20
 
 Term.default = {
-	type: "anonymous",
+	type: "default",
+	name: undefined,
 
 	// If the source matches the term, translate it
 	// Otherwise, throw an error (if the term has one)
@@ -94,7 +95,10 @@ Term.default = {
 	},
 
 	toString(options = {}) {
-		return `${this.type} term`
+		if (this.name !== undefined) {
+			return this.name
+		}
+		return this.type
 	},
 }
 
@@ -151,43 +155,28 @@ Term.options = (term, defaultOptions) => {
 	})
 }
 
-Term.except = (term, exceptions) => {
-	return Term.proxy(term, (methodName, arg, options) => {
-		const optionExceptions = options.exceptions || []
-		const mergedExceptions = [...optionExceptions, ...exceptions]
-		const mergedOptions = { ...options, exceptions: mergedExceptions }
-		return term[methodName](arg, mergedOptions)
-	})
-}
-
 //============//
 // PRIMITIVES //
 //============//
 Term.string = (string) => ({
 	...Term.default,
 	type: "string",
+	name: `"${string}"`,
 
 	match(source) {
 		return source.startsWith(string) ? [string] : []
-	},
-
-	toString() {
-		return `"${string}"`
 	},
 })
 
 Term.regExp = (regExp) => ({
 	...Term.default,
 	type: "regExp",
+	name: `${regExp}`,
 
 	match(source) {
 		const startRegExp = new RegExp(`^${regExp.source}`)
 		const matches = source.match(startRegExp)
 		return matches === null ? [] : [...matches]
-	},
-
-	toString() {
-		return `${regExp}`
 	},
 })
 
@@ -206,22 +195,14 @@ Term.anything = {
 	match(source) {
 		return source.length > 0 ? [source[0]] : []
 	},
-
-	toString() {
-		return "any character"
-	},
 }
 
 Term.end = {
 	...Term.default,
-	type: "end",
+	type: "end of input",
 
 	match(source) {
 		return source.length === 0 ? [""] : []
-	},
-
-	toString() {
-		return "end of input"
 	},
 }
 
@@ -231,10 +212,6 @@ Term.nothing = {
 
 	match(source) {
 		return [""]
-	},
-
-	toString() {
-		return "nothing"
 	},
 }
 
@@ -278,6 +255,7 @@ Term.then = (term, then) => ({
 Term.list = (terms) => ({
 	...Term.default,
 	type: "list",
+	name: `(${terms.map((term) => term.name).join(", ")})`,
 
 	match(source, options = {}) {
 		const matches = []
@@ -318,16 +296,14 @@ Term.list = (terms) => ({
 		const result = this.match(source, options)
 		return result.term.throw(result.source, options)
 	},
-
-	toString(options = {}) {
-		return `${terms.map((term) => term.toString(options)).join(", ")}`
-	},
 })
 
 // Optionally match a term
 Term.maybe = (term) => ({
 	...term,
 	type: "maybe",
+	name: `[${term.name}]`,
+
 	match(source, options = {}) {
 		const matches = term.match(source, options)
 		if (matches.length === 0) {
@@ -343,16 +319,13 @@ Term.maybe = (term) => ({
 		}
 		return term.select(matches, options)
 	},
-
-	toString(options = {}) {
-		return `[${term.toString(options)}]`
-	},
 })
 
 // Match a term one or more times
 Term.many = (term) => ({
 	...term,
 	type: "many",
+	name: `(${term.name})+`,
 	match(source, options = {}) {
 		const matches = []
 
@@ -386,16 +359,13 @@ Term.many = (term) => ({
 	emit(selected, options = {}) {
 		return selected.join("")
 	},
-
-	toString(options = {}) {
-		return `${term.toString(options)}+`
-	},
 })
 
 // Match a term zero or more times
 Term.any = (term) => ({
 	...term,
 	type: "any",
+	name: `{${term.name}}`,
 
 	match(source, options = {}) {
 		const matches = []
@@ -437,15 +407,12 @@ Term.any = (term) => ({
 	emit(selected) {
 		return selected.join("")
 	},
-
-	toString(options = {}) {
-		return `{${term.toString(options)}}`
-	},
 })
 
 Term.or = (terms) => ({
 	...Term.default,
 	type: "or",
+	name: `(${terms.map((term) => term.name).join(" | ")})`,
 
 	match(source, { exceptions = [], ...options } = {}) {
 		for (const term of terms) {
@@ -478,17 +445,31 @@ Term.or = (terms) => ({
 		return selected
 	},
 
+	throw(source, options = {}) {
+		return Term.default.throw.apply(this, [source, options])
+	},
+
 	toString({ exceptions = [], ...options } = {}) {
-		return `${"("}${terms
+		return `(${terms
 			.filter((term) => !exceptions.includes(term))
 			.map((term) => term.toString({ ...exceptions, ...options }))
-			.join(" | ")}${")"}`
+			.join(" | ")})`
 	},
 })
+
+Term.except = (term, exceptions) => {
+	return Term.proxy(term, (methodName, arg, options) => {
+		const optionExceptions = options.exceptions || []
+		const mergedExceptions = [...optionExceptions, ...exceptions]
+		const mergedOptions = { ...options, exceptions: mergedExceptions }
+		return term[methodName](arg, mergedOptions)
+	})
+}
 
 Term.and = (terms) => ({
 	...Term.default,
 	type: "and",
+	name: `"("${terms.map((term) => term.name).join(" & ")}")"`,
 
 	match(source) {
 		let matches = []
@@ -522,14 +503,15 @@ Term.and = (terms) => ({
 		return term.emit(selected)
 	},
 
-	toString() {
-		return `${"("}${terms.join(" & ")}${")"}`
+	toString(options) {
+		return `${"("}${terms.toString(options).join(" & ")}${")"}`
 	},
 })
 
 Term.not = (term) => ({
 	...Term.default,
 	type: "not",
+	name: `!${term.name}`,
 
 	match(source) {
 		const match = term.match(source)
@@ -537,10 +519,6 @@ Term.not = (term) => ({
 			return [source]
 		}
 		return []
-	},
-
-	toString() {
-		return `!${term}`
 	},
 })
 
@@ -561,6 +539,8 @@ Term.reference = (object, property) => {
 	const reference = Term.proxy(Term.default, (methodName, arg, options) => {
 		return object[property][methodName](arg, options)
 	})
+
+	reference.name = property
 
 	Term.references.get(object).set(property, reference)
 	return reference
