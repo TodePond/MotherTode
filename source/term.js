@@ -29,19 +29,28 @@ Term.default = {
 	// If the source matches the term, translate it
 	// Otherwise, throw an error (if the term has one)
 	translate(source, options = {}) {
-		const matches = this.match(source, options)
+		try {
+			const matches = this.match(source, options)
 
-		if (matches.length > 0) {
-			const selected = this.select(matches, options)
-			if (this.check(selected)) {
-				const result = this.emit(selected, options)
-				return this.then(result, options)
+			if (matches.length > 0) {
+				const selected = this.select(matches, options)
+				if (this.check(selected)) {
+					const result = this.emit(selected, options)
+					return this.then(result, options)
+				}
 			}
-		}
 
-		const error = this.throw(source, options)
-		if (error !== undefined) {
-			throw Error(error)
+			const error = this.throw(source, options)
+			if (error !== undefined) {
+				throw Error(error)
+			}
+		} catch (error) {
+			if (error instanceof RangeError) {
+				const message = Term.default.throw.apply(this, [source, options])
+				throw Error(message)
+			} else {
+				throw error
+			}
 		}
 	},
 
@@ -143,7 +152,12 @@ Term.options = (term, defaultOptions) => {
 }
 
 Term.except = (term, exceptions) => {
-	return Term.options(term, { exceptions })
+	return Term.proxy(term, (methodName, arg, options) => {
+		const optionExceptions = options.exceptions || []
+		const mergedExceptions = [...optionExceptions, ...exceptions]
+		const mergedOptions = { ...options, exceptions: mergedExceptions }
+		return term[methodName](arg, mergedOptions)
+	})
 }
 
 //============//
@@ -167,7 +181,8 @@ Term.regExp = (regExp) => ({
 	type: "regExp",
 
 	match(source) {
-		const matches = source.match(regExp)
+		const startRegExp = new RegExp(`^${regExp.source}`)
+		const matches = source.match(startRegExp)
 		return matches === null ? [] : [...matches]
 	},
 
@@ -435,7 +450,7 @@ Term.or = (terms) => ({
 	match(source, { exceptions = [], ...options } = {}) {
 		for (const term of terms) {
 			if (exceptions.includes(term)) {
-				//exceptions = exceptions.filter((exception) => exception !== term)
+				exceptions = exceptions.filter((exception) => exception !== term)
 				continue
 			}
 			const match = term.match(source, { exceptions, ...options })
@@ -567,3 +582,5 @@ Term.hoist = (declare) => {
 
 	return terms
 }
+
+// TODO: this is messy, clean it up

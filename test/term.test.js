@@ -44,6 +44,13 @@ Deno.test("regular expression", () => {
 	assertEquals(yoTerm.test("hi"), false)
 })
 
+Deno.test("regular expression - set", () => {
+	const digit = Term.regExp(/[0-9]+/)
+	assertEquals(digit.translate("123"), "123")
+	assertThrows(() => digit.translate("abc"), Error, 'Expected /[0-9]+/ but found "abc"')
+	assertThrows(() => digit.translate("hello123"), Error, 'Expected /[0-9]+/ but found "hello123"')
+})
+
 //================//
 // BUILT-IN TERMS //
 //================//
@@ -370,15 +377,96 @@ Deno.test("list - maybe", () => {
 	assertEquals(listTerm.translate("hello"), "hello")
 })
 
-/*
-Deno.test("hoist - recursive", () => {
-	const { list, hello } = Term.hoist(({ list, hello }) => {
+Deno.test("hoist - recursive maybe", () => {
+	const { list } = Term.hoist(({ list, hello }) => {
 		return {
 			list: Term.list([hello, Term.maybe(list)]),
 			hello: Term.string("hello"),
 		}
 	})
 
+	assertEquals(list.translate("hello"), "hello")
 	assertEquals(list.translate("hellohello"), "hellohello")
+	assertEquals(list.translate("hellohellohello"), "hellohellohello")
 })
-*/
+
+Deno.test("hoist - or", () => {
+	const { or, except } = Term.hoist(({ hello, hi }) => {
+		return {
+			hello: Term.string("hello"),
+			hi: Term.string("hi"),
+			or: Term.or([hello, hi]),
+			except: Term.except(Term.or([hello, hi]), [hello]),
+		}
+	})
+
+	assertEquals(or.translate("hello"), "hello")
+	assertEquals(or.translate("hi"), "hi")
+	assertThrows(() => or.translate("yo"), Error, 'Expected ("hello" | "hi") but found "yo"')
+
+	assertEquals(except.translate("hi"), "hi")
+	assertThrows(() => except.translate("hello"), Error, 'Expected ("hi") but found "hello"')
+})
+
+Deno.test("hoist - recursive or", () => {
+	const { list } = Term.hoist(({ list, hello, tail }) => {
+		return {
+			list: Term.list([hello, tail]),
+			hello: Term.string("hello"),
+			tail: Term.or([list, hello]),
+		}
+	})
+
+	assertEquals(list.translate("hellohello"), "hellohello")
+	assertEquals(list.translate("hellohellohello"), "hellohellohello")
+	assertThrows(() => list.translate("hello"), Error, "foo")
+})
+
+Deno.test("hoist - left recursion", () => {
+	const { number } = Term.hoist(({ number, add, literal }) => {
+		return {
+			literal: Term.regExp(/[0-9]+/),
+			number: Term.or([add, literal]),
+			add: Term.list([Term.except(number, [add]), Term.string("+"), number]),
+		}
+	})
+
+	assertEquals(number.translate("1"), "1")
+	assertEquals(number.translate("1+2"), "1+2")
+})
+
+Deno.test("hoist - deep left recursion", () => {
+	const { number } = Term.hoist(({ number, add, subtract, literal }) => {
+		return {
+			literal: Term.regExp(/[0-9]+/),
+			number: Term.or([add, subtract, literal]),
+			add: Term.list([Term.except(number, [add]), Term.string("+"), number]),
+			subtract: Term.list([Term.except(number, [subtract]), Term.string("-"), number]),
+		}
+	})
+
+	assertEquals(number.translate("1"), "1")
+	assertEquals(number.translate("1+2"), "1+2")
+	assertEquals(number.translate("1-2"), "1-2")
+	assertEquals(number.translate("1+2-3"), "1+2-3")
+	assertEquals(number.translate("1-2+3-4"), "1-2+3-4")
+})
+
+Deno.test("hoist - deeper left recursion", () => {
+	const { number } = Term.hoist(({ number, add, subtract, literal, group }) => {
+		return {
+			literal: Term.regExp(/[0-9]+/),
+			number: Term.or([group, add, subtract, literal]),
+			add: Term.list([Term.except(number, [add]), Term.string("+"), number]),
+			subtract: Term.list([Term.except(number, [subtract]), Term.string("-"), number]),
+			group: Term.list([Term.string("("), number, Term.string(")")]),
+		}
+	})
+
+	assertEquals(number.translate("1"), "1")
+	assertEquals(number.translate("1+2"), "1+2")
+	assertEquals(number.translate("1+2-3"), "1+2-3")
+
+	assertEquals(number.translate("(1+2)"), "(1+2)")
+	//assertThrows(() => number.translate("(1+2"), Error, 'Expected ")" but found end of input')
+})
