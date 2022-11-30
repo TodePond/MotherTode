@@ -78,6 +78,11 @@ const MotherTodeFrogasaurus = {}
 				return [source]
 			},
 		
+			// Find the longest possible snippet that is compatible with the term
+			travel(source, options = {}) {
+				return this.match(source, options).flat(Infinity).join("")
+			},
+		
 			// What to pass to the check and emit functions
 			select(matches, options = {}) {
 				return matches.flat(Infinity)
@@ -133,6 +138,10 @@ const MotherTodeFrogasaurus = {}
 				return proxy("match", source, options)
 			},
 		
+			travel(source, options = {}) {
+				return proxy("travel", source, options)
+			},
+		
 			select(matches, options = {}) {
 				return proxy("select", matches, options)
 			},
@@ -178,6 +187,17 @@ const MotherTodeFrogasaurus = {}
 			match(source) {
 				return source.startsWith(string) ? [string] : []
 			},
+		
+			travel(source) {
+				let snippet = ""
+				for (let i = 0; i < string.length; i++) {
+					if (source[i] !== string[i]) {
+						break
+					}
+					snippet += source[i]
+				}
+				return snippet
+			},
 		})
 		
 		Term.regExp = (regExp) => ({
@@ -188,7 +208,12 @@ const MotherTodeFrogasaurus = {}
 			match(source) {
 				const startRegExp = new RegExp(`^${regExp.source}`)
 				const matches = source.match(startRegExp)
-				return matches === null ? [] : [...matches]
+				return matches === null ? [] : [matches[0]]
+			},
+		
+			travel(source) {
+				const matches = this.match(source)
+				return matches.join("")
 			},
 		})
 		
@@ -289,6 +314,26 @@ const MotherTodeFrogasaurus = {}
 				return matches
 			},
 		
+			travel(source, options = {}) {
+				let snippet = ""
+		
+				for (const term of terms) {
+					const match = term.match(source, options)
+					const travel = term.travel(source, options)
+		
+					if (match.length === 0) {
+						snippet += travel
+						break
+					}
+		
+					const termSnippet = match.flat(Infinity).join("")
+					snippet += termSnippet
+					source = source.slice(termSnippet.length)
+				}
+		
+				return snippet
+			},
+		
 			// Translate each match based on its term
 			select(matches, options = {}) {
 				const selected = []
@@ -324,6 +369,10 @@ const MotherTodeFrogasaurus = {}
 				return matches
 			},
 		
+			travel(source, options = {}) {
+				return term.travel(source, options)
+			},
+		
 			select(matches, options = {}) {
 				const [match] = matches
 				if (match === "") {
@@ -353,6 +402,25 @@ const MotherTodeFrogasaurus = {}
 				}
 		
 				return matches
+			},
+		
+			travel(source, options = {}) {
+				let snippet = ""
+		
+				while (true) {
+					const match = term.match(source, options)
+					if (match.length === 0) {
+						const travel = term.travel(source, options)
+						snippet += travel
+						break
+					}
+		
+					const termSnippet = match.flat(Infinity).join("")
+					snippet += termSnippet
+					source = source.slice(termSnippet.length)
+				}
+		
+				return snippet
 			},
 		
 			// Translate each match
@@ -399,6 +467,25 @@ const MotherTodeFrogasaurus = {}
 				return matches
 			},
 		
+			travel(source, options = {}) {
+				let snippet = ""
+		
+				while (true) {
+					const match = term.match(source, options)
+					if (match.length === 0) {
+						const travel = term.travel(source, options)
+						snippet += travel
+						break
+					}
+		
+					const termSnippet = match.flat(Infinity).join("")
+					snippet += termSnippet
+					source = source.slice(termSnippet.length)
+				}
+		
+				return snippet
+			},
+		
 			// Translate each match
 			select(matches, options = {}) {
 				if (matches.length === 1 && matches[0] === "") {
@@ -442,6 +529,24 @@ const MotherTodeFrogasaurus = {}
 				}
 		
 				return []
+			},
+		
+			// Return the longest travel snippet of all terms
+			travel(source, { exceptions = [], ...options } = {}) {
+				let snippet = ""
+		
+				for (const term of terms) {
+					if (exceptions.includes(term)) {
+						exceptions = exceptions.filter((exception) => exception !== term)
+						continue
+					}
+					const travel = term.travel(source, { exceptions, ...options })
+					if (travel.length > snippet.length) {
+						snippet = travel
+					}
+				}
+		
+				return snippet
 			},
 		
 			select(matches, options = {}) {
@@ -501,6 +606,26 @@ const MotherTodeFrogasaurus = {}
 				return matches
 			},
 		
+			// Return the longest travel snippet that satisfies all terms
+			travel(source, options = {}) {
+				let snippet = source
+		
+				for (let i = 0; i < terms.length; i++) {
+					const term = terms[i]
+					const travel = term.travel(source, options)
+					if (travel.length < snippet.length) {
+						snippet = travel
+						if (snippet.length === 0) {
+							break
+						} else {
+							i = 0
+						}
+					}
+				}
+		
+				return snippet
+			},
+		
 			throw(source) {
 				const result = this.match(source)
 				return result.term.throw(source)
@@ -532,6 +657,24 @@ const MotherTodeFrogasaurus = {}
 					return [source]
 				}
 				return []
+			},
+		
+			travel(source, options = {}) {
+				const match = term.match(source, options)
+				if (match.length === 0) {
+					return source
+				}
+		
+				let snippet = term.travel(source, options)
+				while (snippet.length > 0) {
+					snippet = snippet.slice(0, -1)
+					const match = term.match(snippet, options)
+					if (match.length === 0) {
+						return snippet
+					}
+				}
+		
+				return snippet
 			},
 		})
 		
