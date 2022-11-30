@@ -1,4 +1,4 @@
-import { assertEquals, assertThrows } from "https://deno.land/std@0.165.0/testing/asserts.ts"
+import { assertAlmostEquals, assertEquals, assertThrows } from "https://deno.land/std@0.165.0/testing/asserts.ts"
 import { Term } from "../mothertode-import.js"
 
 //============//
@@ -303,36 +303,59 @@ Deno.test("not", () => {
 	assertEquals(notTerm2.match("hello").length, 0)
 })
 
-Deno.test("or - except", () => {
+Deno.test("except", () => {
 	const helloTerm = Term.string("hello")
 	const hiTerm = Term.string("hi")
 	const orTerm = Term.or([helloTerm, hiTerm])
 
-	assertEquals(orTerm.translate("hi", { exceptions: [helloTerm] }), "hi")
-	assertThrows(
-		() => orTerm.translate("hello", { exceptions: [helloTerm] }),
-		Error,
-		'Expected ("hi") but found "hello"',
-	)
+	const exceptTerm = Term.except(orTerm, [helloTerm])
 
-	assertEquals(orTerm.match("hi", { exceptions: [helloTerm] })[0][0], "hi")
-	assertEquals(orTerm.match("hello", { exceptions: [helloTerm] }).length, 0)
+	assertEquals(exceptTerm.translate("hi"), "hi")
+	assertThrows(() => exceptTerm.translate("hello"), Error, 'Expected ("hi") but found "hello"')
 })
 
-Deno.test("declare", () => {
-	const { number } = Term.declare(({ number, literal, add }) => {
-		const _literal = Term.regExp(/[0-9]+/)
-		const _number = Term.or([add, literal])
-		const _add = Term.emit(
-			Term.list([Term.except(number, [add]), Term.string("+"), number]),
-			([a, _, b]) => parseInt(a) + parseInt(b),
-		)
-		return { number: _number, literal: _literal, add: _add }
+Deno.test("reference", () => {
+	const object = { hello: Term.string("hello") }
+	const reference = Term.reference(object, "hello")
+
+	assertEquals(reference.translate("hello"), "hello")
+	assertThrows(() => reference.translate("hi"), Error, 'Expected "hello" but found "hi"')
+
+	const reference2 = Term.reference(object, "hello")
+	assertEquals(reference, reference2)
+})
+
+Deno.test("hoist", () => {
+	const { hello } = Term.hoist(() => {
+		return { hello: Term.string("hello") }
 	})
 
-	assertEquals(number.translate("1"), "1")
-	assertEquals(number.translate("1+2"), "3")
-	assertEquals(number.translate("1+2+3"), "6")
-	assertEquals(number.translate("1+2+3+4"), "10")
-	assertEquals(number.translate("1+2+3+4+5"), "15")
+	assertEquals(hello.translate("hello"), "hello")
+	assertThrows(() => hello.translate("hi"), Error, 'Expected "hello" but found "hi"')
+})
+
+Deno.test("hoist - list", () => {
+	const { helloHello } = Term.hoist(({ hello }) => {
+		return { hello: Term.string("hello"), helloHello: Term.list([hello, hello]) }
+	})
+
+	assertEquals(helloHello.translate("hellohello"), "hellohello")
+	assertThrows(() => helloHello.translate("hi"), Error, 'Expected "hello" but found "hi"')
+	assertThrows(() => helloHello.translate("hellohi"), Error, 'Expected "hello" but found "hi"')
+})
+
+Deno.test("hoist - except", () => {
+	const { or, except } = Term.hoist(({ hello, hi }) => {
+		return {
+			hello: Term.string("hello"),
+			hi: Term.string("hi"),
+			or: Term.or([hello, hi]),
+			except: Term.except(Term.or([hello, hi]), [hello]),
+		}
+	})
+
+	assertEquals(or.translate("hello"), "hello")
+	assertEquals(or.translate("hi"), "hi")
+	assertEquals(except.translate("hi"), "hi")
+	assertThrows(() => except.translate("hello"), Error, 'Expected ("hi") but found "hello"')
 })

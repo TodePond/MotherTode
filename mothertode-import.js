@@ -154,7 +154,9 @@ const MotherTodeFrogasaurus = {}
 			})
 		}
 		
-		Term.except = (term, exceptions) => Term.options(term, { exceptions })
+		Term.except = (term, exceptions) => {
+			return Term.options(term, { exceptions })
+		}
 		
 		//============//
 		// PRIMITIVES //
@@ -435,13 +437,12 @@ const MotherTodeFrogasaurus = {}
 			type: "or",
 		
 			match(source, { exceptions = [], ...options } = {}) {
-				const exceptionsRemaining = new Set(exceptions)
 				for (const term of terms) {
-					if (exceptionsRemaining.has(term)) {
-						exceptionsRemaining.delete(term)
+					if (exceptions.includes(term)) {
+						//exceptions = exceptions.filter((exception) => exception !== term)
 						continue
 					}
-					const match = term.match(source, { ...exceptionsRemaining, ...options })
+					const match = term.match(source, { exceptions, ...options })
 					match.term = term
 					if (match.length > 0) {
 						const matches = [match]
@@ -535,23 +536,35 @@ const MotherTodeFrogasaurus = {}
 		//=======//
 		// SCOPE //
 		//=======//
-		Term.declare = (declare) => {
+		Term.references = new Map()
+		Term.reference = (object, property) => {
+			if (Term.references.has(object)) {
+				const references = Term.references.get(object)
+				if (references.has(property)) {
+					return references.get(property)
+				}
+			} else {
+				Term.references.set(object, new Map())
+			}
+		
+			const reference = Term.proxy(Term.default, (methodName, arg, options) => {
+				return object[property][methodName](arg, options)
+			})
+		
+			Term.references.get(object).set(property, reference)
+			return reference
+		}
+		
+		// declare: (references) => terms
+		Term.hoist = (declare) => {
 			const terms = {}
-			const proxiesCache = new Map()
-			const proxies = new Proxy(terms, {
+			const references = new Proxy(terms, {
 				get(target, key) {
-					if (proxiesCache.has(key)) {
-						return proxiesCache.get(key)
-					}
-					const proxy = Term.proxy(Term.default, (method, arg, options) => {
-						return target[key][method](arg, options)
-					})
-					proxiesCache.set(key, proxy)
-					return proxy
+					return Term.reference(target, key)
 				},
 			})
 		
-			const declared = declare(proxies)
+			const declared = declare(references)
 			for (const key in declared) {
 				terms[key] = declared[key]
 			}
