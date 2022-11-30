@@ -280,7 +280,7 @@ Term.then = (term, then) => ({
 Term.list = (terms) => ({
 	...Term.default,
 	type: "list",
-	name: `(${terms.map((term) => term.name).join(", ")})`,
+	name: terms.length === 1 ? term.name : `(${terms.map((term) => term.name).join(", ")})`,
 
 	match(source, options = {}) {
 		const matches = []
@@ -550,9 +550,39 @@ Term.or = (terms) => ({
 		return selected
 	},
 
-	throw(source, options = {}) {
-		// TODO: travel along each term to find the longest match!
-		return Term.default.throw.apply(this, [source, options])
+	throw(source, { exceptions = [], ...options } = {}) {
+		const snippets = []
+		let length = 0
+
+		for (const term of terms) {
+			if (exceptions.includes(term)) {
+				exceptions = exceptions.filter((exception) => exception !== term)
+				snippets.push("")
+			}
+			const travel = term.travel(source, { exceptions, ...options })
+			snippets.push(travel)
+			if (travel.length > length) {
+				length = travel.length
+			}
+		}
+
+		const longestTerms = snippets
+			.map((snippet, index) => (snippet.length === length ? index : null))
+			.filter((index) => index !== null)
+			.map((index) => terms[index])
+
+		// todo: fix: some of the longest terms are not terms or something, they are just arrays
+
+		if (longestTerms.length === 1) {
+			const term = longestTerms[0]
+			return term.throw(source, { exceptions, ...options })
+		}
+
+		const found = source.length === 0 ? "end of input" : '"' + source.slice(0, Term.ERROR_SNIPPET_LENGTH) + '"'
+		const termNames = longestTerms.map((term) => term.toString()).join(" | ")
+		const message = `Expected ${termNames} but found ${found}`
+
+		return message
 	},
 
 	toString({ exceptions = [], ...options } = {}) {

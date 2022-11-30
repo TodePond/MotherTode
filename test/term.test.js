@@ -339,7 +339,7 @@ Deno.test("or", () => {
 
 	assertEquals(or.translate("hello"), "hello")
 	assertEquals(or.translate("hi"), "hi")
-	assertThrows(() => or.translate("yo"), Error, 'Expected ("hello" | "hi") but found "yo"')
+	assertThrows(() => or.translate("yo"), Error, 'Expected "hello" | "hi" but found "yo"')
 
 	assertEquals(or.match("hello")[0][0], "hello")
 	assertEquals(or.match("hi")[0][0], "hi")
@@ -359,7 +359,7 @@ Deno.test("or", () => {
 	const orShout = Term.or([shout, Term.string("hi")])
 	assertEquals(orShout.translate("hello"), "hello!")
 	assertEquals(orShout.translate("hi"), "hi")
-	assertThrows(() => orShout.translate("yo"), Error, 'Expected ("hello" | "hi") but found "yo"')
+	assertThrows(() => orShout.translate("yo"), Error, 'Expected "hello" | "hi" but found "yo"')
 
 	assertEquals(orShout.travel("hello"), "hello")
 	assertEquals(orShout.travel("hi"), "hi")
@@ -371,7 +371,7 @@ Deno.test("or", () => {
 	assertEquals(or2.translate("hello"), "hello")
 	assertEquals(or2.translate("hi"), "hi")
 	assertEquals(or2.translate("yo"), "yo")
-	assertThrows(() => or2.translate("wassup"), Error, 'Expected ("hello" | "hi" | "yo") but found "wassup"')
+	assertThrows(() => or2.translate("wassup"), Error, 'Expected "hello" | "hi" | "yo" but found "wassup"')
 
 	assertEquals(or2.travel("hello"), "hello")
 	assertEquals(or2.travel("hi"), "hi")
@@ -448,7 +448,7 @@ Deno.test("except", () => {
 	const exceptTerm = Term.except(or, [hello])
 
 	assertEquals(exceptTerm.translate("hi"), "hi")
-	assertThrows(() => exceptTerm.translate("hello"), Error, 'Expected ("hi") but found "hello"')
+	assertThrows(() => exceptTerm.translate("hello"), Error, 'Expected "hi" but found "hello"')
 
 	assertEquals(exceptTerm.travel("hi"), "hi")
 	assertEquals(exceptTerm.travel("hello"), "h")
@@ -507,7 +507,10 @@ Deno.test("hoist - except", () => {
 	assertEquals(or.translate("hello"), "hello")
 	assertEquals(or.translate("hi"), "hi")
 	assertEquals(except.translate("hi"), "hi")
-	assertThrows(() => except.translate("hello"), Error, 'Expected ("hi") but found "hello"')
+	assertThrows(() => except.translate("hello"), Error, 'Expected "hi" but found "hello"')
+	assertThrows(() => or.translate("wassup"), Error, 'Expected "hello" | "hi" but found "wassup"')
+	//assertThrows(() => except.translate("wassup"), Error, 'Expected "hi" but found "wassup"')
+	// todo: fix this ^
 
 	assertEquals(or.travel("hello"), "hello")
 	assertEquals(or.travel("hi"), "hi")
@@ -560,14 +563,15 @@ Deno.test("hoist - or", () => {
 
 	assertEquals(or.translate("hello"), "hello")
 	assertEquals(or.translate("hi"), "hi")
-	//assertThrows(() => or.translate("yo"), Error, 'Expected ("hello" | "hi") but found "yo"')
+	assertThrows(() => or.translate("yo"), Error, 'Expected "hello" | "hi" but found "yo"')
+	assertThrows(() => or.translate("he"), Error, 'Expected "hello" but found "he"')
 
 	assertEquals(or.travel("hi"), "hi")
 	assertEquals(or.travel("hello"), "hello")
 	assertEquals(or.travel("ho"), "h")
 
 	assertEquals(except.translate("hi"), "hi")
-	//assertThrows(() => except.translate("hello"), Error, 'Expected ("hi") but found "hello"')
+	assertThrows(() => except.translate("hello"), Error, 'Expected "hi" but found "hello"')
 
 	assertEquals(except.travel("hi"), "hi")
 	assertEquals(except.travel("hello"), "h")
@@ -584,7 +588,7 @@ Deno.test("hoist - recursive or", () => {
 
 	assertEquals(list.translate("hellohello"), "hellohello")
 	assertEquals(list.translate("hellohellohello"), "hellohellohello")
-	//assertThrows(() => list.translate("hello"), Error, '((hello, tail) | "hello")')
+	assertThrows(() => list.translate("hello"), Error, 'Expected (hello, tail) | "hello" but found end of input')
 
 	assertEquals(list.travel("hellohello"), "hellohello")
 	assertEquals(list.travel("hello"), "hello")
