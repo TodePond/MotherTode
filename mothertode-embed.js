@@ -458,6 +458,7 @@ const MotherTodeFrogasaurus = {}
 			},
 		
 			throw(source, options = {}) {
+				// TODO: travel along each term to find the longest match!
 				return Term.default.throw.apply(this, [source, options])
 			},
 		
