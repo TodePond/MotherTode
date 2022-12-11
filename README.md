@@ -2,7 +2,7 @@
 
 # Follow the rewrite progress [here](https://github.com/TodePond/MotherTode/issues/26)!
 
-<img align="right" height="100" src="http://todepond.com/IMG/MotherTode@0.25x.png">
+<img align="right" height="100" src="http://img.todepond.com/IMG/MotherTode@0.25x.png">
 
 # MotherTode
 
