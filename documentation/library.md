@@ -1,5 +1,3 @@
-# Library
-
 MotherTode is built on top of a little library.<br>
 If you want, you can use the library without using the language itself.
 
