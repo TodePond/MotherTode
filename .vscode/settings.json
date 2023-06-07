@@ -1,3 +1,13 @@
 {
-	"deno.enable": true
+	"deno.enable": true,
+	"editor": {
+		"formatOnSave": true,
+		"codeActionsOnSave": {
+			"source.addMissingImports": true,
+			"source.organizeImports": true
+		}
+	},
+	"extensions": {
+		"recommendations": ["prettier.prettier-vscode"]
+	}
 }

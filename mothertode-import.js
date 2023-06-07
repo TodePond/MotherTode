@@ -10,24 +10,6 @@ const MotherTodeFrogasaurus = {}
 	//====== ./term.js ======
 	{
 		MotherTodeFrogasaurus["./term.js"] = {}
-		/*
-		
-		type Tree<T> = [T] | Array<Tree<T>>
-		
-		type Term = {
-			type: string
-			translate: (source: string) => string
-			test: (source: string) => boolean
-			throw: (source: string) => string | undefined
-			match: (source: string) => Tree<string>
-			select: (matches: string[]) => Array<string>
-			emit: (selected: string[]) => string
-			check: (selected: string[]) => string
-			then: (result: string) => string
-		}
-		
-		*/
-		
 		const Term = {}
 		
 		//=========//
@@ -292,7 +274,7 @@ const MotherTodeFrogasaurus = {}
 		Term.list = (terms) => ({
 			...Term.default,
 			type: "list",
-			name: terms.length === 1 ? term.name : `(${terms.map((term) => term.name).join(", ")})`,
+			name: terms.length === 1 ? terms.name : `(${terms.map((term) => term.name).join(", ")})`,
 		
 			match(source, options = {}) {
 				const matches = []

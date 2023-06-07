@@ -1,4 +1,4 @@
-import { assertAlmostEquals, assertEquals, assertThrows } from "https://deno.land/std@0.165.0/testing/asserts.ts"
+import { assertEquals, assertThrows } from "https://deno.land/std@0.165.0/testing/asserts.ts"
 import { Term } from "../mothertode-import.js"
 
 //============//
