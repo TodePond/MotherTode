@@ -18,6 +18,8 @@ Deno.test("string", () => {
 
 	assertEquals(hello.travel("hello"), "hello")
 	assertEquals(hello.travel("hell"), "hell")
+
+	assertEquals(hello.test("hello world"), true)
 })
 
 Deno.test("regular expression", () => {
