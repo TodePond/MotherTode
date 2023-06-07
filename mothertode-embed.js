@@ -29,10 +29,8 @@ const MotherTodeFrogasaurus = {}
 		
 					if (matches.length > 0) {
 						const selected = this.select(matches, options)
-						if (this.check(selected)) {
-							const result = this.emit(selected, options)
-							return this.then(result, options)
-						}
+						const result = this.emit(selected, options)
+						return this.then(result, options)
 					}
 		
 					const error = this.throw(source, options)
@@ -65,14 +63,9 @@ const MotherTodeFrogasaurus = {}
 				return this.match(source, options).flat(Infinity).join("")
 			},
 		
-			// What to pass to the check and emit functions
+			// What to pass to the emit function
 			select(matches, options = {}) {
 				return matches.flat(Infinity)
-			},
-		
-			// Additional check to perform after selecting
-			check(selected, options = {}) {
-				return true
 			},
 		
 			// What to emit if the term matches
@@ -130,10 +123,6 @@ const MotherTodeFrogasaurus = {}
 		
 			emit(selected, options = {}) {
 				return proxy("emit", selected, options)
-			},
-		
-			check(selected, options = {}) {
-				return proxy("check", selected, options)
 			},
 		
 			then(result, options = {}) {
@@ -237,34 +226,9 @@ const MotherTodeFrogasaurus = {}
 		//==========//
 		// OVERRIDE //
 		//==========//
-		Term.throw = (term, throw_) => ({
-			...term,
-			throw: throw_,
-		})
-		
-		Term.match = (term, match) => ({
-			...term,
-			match,
-		})
-		
-		Term.select = (term, select) => ({
-			...term,
-			select,
-		})
-		
-		Term.emit = (term, emit) => ({
+		Term.withEmit = (term, emit) => ({
 			...term,
 			emit,
-		})
-		
-		Term.check = (term, check) => ({
-			...term,
-			check,
-		})
-		
-		Term.then = (term, then) => ({
-			...term,
-			then,
 		})
 		
 		//===========//
@@ -730,8 +694,6 @@ const MotherTodeFrogasaurus = {}
 		
 			return terms
 		}
-		
-		// TODO: this is messy, clean it up
 		
 
 		MotherTodeFrogasaurus["./term.js"].Term = Term

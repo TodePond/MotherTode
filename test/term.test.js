@@ -177,11 +177,11 @@ Deno.test("list", () => {
 	assertEquals(list.travel("helloh"), "helloh")
 	assertEquals(list.travel("hell"), "hell")
 
-	const custom = Term.emit(list, ([hello, hi]) => `${hello} ${hi}`)
+	const custom = Term.withEmit(list, ([hello, hi]) => `${hello} ${hi}`)
 	assertEquals(custom.translate("hellohi"), "hello hi")
 	assertThrows(() => custom.translate("helloh"), Error, 'Expected "hi" but found "h"')
 
-	const shout = Term.emit(Term.string("hello"), (hello) => hello + "!")
+	const shout = Term.withEmit(Term.string("hello"), (hello) => hello + "!")
 	const listShout = Term.list([shout, shout])
 	assertEquals(listShout.translate("hellohello"), "hello!hello!")
 	assertThrows(() => listShout.translate("hello"), Error, 'Expected "hello" but found end of input')
@@ -223,7 +223,7 @@ Deno.test("list - nested", () => {
 	assertEquals(list2.travel("hellohiyo"), "hellohiyo")
 	assertEquals(list2.travel("hellohiy"), "hellohiy")
 
-	const custom = Term.emit(list, ([hello, hiyo]) => `${hello} ${hiyo}`)
+	const custom = Term.withEmit(list, ([hello, hiyo]) => `${hello} ${hiyo}`)
 	assertEquals(custom.translate("hellohiyo"), "hello hiyo")
 	assertEquals(custom.match("hellohiyo"), [["hello"], [["hi"], ["yo"]]])
 	assertThrows(() => custom.translate("hellohi"), Error, 'Expected "yo" but found end of input')
@@ -231,7 +231,7 @@ Deno.test("list - nested", () => {
 	assertEquals(custom.travel("hellohiyo"), "hellohiyo")
 	assertEquals(custom.travel("hellohiy"), "hellohiy")
 
-	const shout = Term.emit(Term.string("hello"), (hello) => hello + "!")
+	const shout = Term.withEmit(Term.string("hello"), (hello) => hello + "!")
 	const listShout = Term.list([shout, Term.list([shout, shout])])
 	assertEquals(listShout.translate("hellohellohello"), "hello!hello!hello!")
 	assertEquals(listShout.match("hellohellohello"), [["hello"], [["hello"], ["hello"]]])
@@ -257,7 +257,7 @@ Deno.test("maybe", () => {
 	assertEquals(maybe.travel("hello"), "hello")
 	assertEquals(maybe.travel("he"), "he")
 
-	const customTerm = Term.emit(maybe, (string) => string + "!")
+	const customTerm = Term.withEmit(maybe, (string) => string + "!")
 	assertEquals(customTerm.match("hello"), ["hello"])
 	assertEquals(customTerm.translate("hello"), "hello!")
 	assertEquals(customTerm.translate("hi"), "!")
@@ -265,7 +265,7 @@ Deno.test("maybe", () => {
 	assertEquals(customTerm.travel("hello"), "hello")
 	assertEquals(customTerm.travel("he"), "he")
 
-	const shout = Term.emit(Term.string("hello"), (hello) => hello + "!")
+	const shout = Term.withEmit(Term.string("hello"), (hello) => hello + "!")
 	const maybeShoutTerm = Term.maybe(shout)
 	assertEquals(maybeShoutTerm.match("hello"), ["hello"])
 	assertEquals(maybeShoutTerm.translate("hello"), "hello!")
@@ -295,7 +295,7 @@ Deno.test("many", () => {
 	assertEquals(many.travel("hellohellohello"), "hellohellohello")
 	assertEquals(many.travel("hellohellohe"), "hellohellohe")
 
-	const shout = Term.emit(Term.string("hello"), (hello) => hello + "!")
+	const shout = Term.withEmit(Term.string("hello"), (hello) => hello + "!")
 	const manyShout = Term.many(shout)
 	assertEquals(manyShout.translate("hello"), "hello!")
 	assertEquals(manyShout.translate("hellohello"), "hello!hello!")
@@ -326,7 +326,7 @@ Deno.test("any", () => {
 	assertEquals(any.travel("hellohellohe"), "hellohellohe")
 	assertEquals(any.travel(""), "")
 
-	const shout = Term.emit(Term.string("hello"), (hello) => hello + "!")
+	const shout = Term.withEmit(Term.string("hello"), (hello) => hello + "!")
 	const anyShout = Term.any(shout)
 	assertEquals(anyShout.translate("hello"), "hello!")
 	assertEquals(anyShout.translate("hellohello"), "hello!hello!")
@@ -357,7 +357,7 @@ Deno.test("or", () => {
 	assertEquals(or.travel("h"), "h")
 	assertEquals(or.travel("yo"), "")
 
-	const shout = Term.emit(Term.string("hello"), ([hello]) => hello + "!")
+	const shout = Term.withEmit(Term.string("hello"), ([hello]) => hello + "!")
 	const orShout = Term.or([shout, Term.string("hi")])
 	assertEquals(orShout.translate("hello"), "hello!")
 	assertEquals(orShout.translate("hi"), "hi")
@@ -674,4 +674,12 @@ Deno.test("hoist - deeper left recursion", () => {
 	assertEquals(number.travel("1+2-3"), "1+2-3")
 	assertEquals(number.travel("(1+2)-(3+4)"), "(1+2)-(3+4)")
 	assertEquals(number.travel("(1+2)-(3+4-"), "(1+2)-(3+4")
+})
+
+Deno.test("check", () => {
+	const number = Term.regExp(/[0-9]+/)
+	// const check = Term.check(number, (string) => parseInt(string) > 5)
+
+	// assertEquals(check.translate("6"), "6")
+	// assertThrows(() => check.translate("5"), Error, "Expected check to pass but it failed")
 })
